@@ -203,6 +203,40 @@ class UARTNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val she
   def place(designInput: UARTDesignInput) = new UARTNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
 }
 
+// LVDS
+class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: LVDSDesignInput, val shellInput: LVDSShellInput)
+  extends LVDSXilinxPlacedOverlay(name, designInput, shellInput, 4)
+{
+  shell { InModuleBody {
+    val packagePinsWithPackageIOs = Seq(
+      ("C18", IOPin(io.i_clk_p)),     // Sch=FMC_CLK1_M2C_P
+      ("C19", IOPin(io.i_clk_n)),     // Sch=FMC_CLK1_M2C_N
+      ("C13", IOPin(io.i_valid_p)),   // Sch=FMC_LA28_P
+      ("B13", IOPin(io.i_valid_n)),   // Sch=FMC_LA28_N
+      ("C14", IOPin(io.i_frame_p)),   // Sch=FMC_LA29_P
+      ("C15", IOPin(io.i_frame_n)),   // Sch=FMC_LA29_N
+      ("E13", IOPin(io.i_data_p(0))), // Sch=FMC_LA31_P
+      ("E14", IOPin(io.i_data_n(0))), // Sch=FMC_LA31_N
+      ("A13", IOPin(io.i_data_p(1))), // Sch=FMC_LA30_P
+      ("A14", IOPin(io.i_data_n(1))), // Sch=FMC_LA30_N
+      ("F13", IOPin(io.i_data_p(2))), // Sch=FMC_LA33_P
+      ("F14", IOPin(io.i_data_n(2))), // Sch=FMC_LA33_N
+      ("A15", IOPin(io.i_data_p(3))), // Sch=FMC_LA32_P
+      ("A16", IOPin(io.i_data_n(3)))  // Sch=FMC_LA32_N
+    )
+
+    packagePinsWithPackageIOs foreach { case (pin, io) => {
+      shell.xdc.addPackagePin(io, pin)
+      shell.xdc.addIOStandard(io, "LVDS_25")
+      shell.xdc.addIOB(io)
+    } }
+  } }
+}
+class LVDSNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: LVDSShellInput)(implicit val valName: ValName)
+  extends LVDSShellPlacer[NexysVideoShellBasicOverlays] {
+  def place(designInput: LVDSDesignInput) = new LVDSNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
+}
+
 // 8 LEDs
 object LEDNexysVideoPinConstraints{
   val pins = Seq(
@@ -335,6 +369,7 @@ abstract class NexysVideoShellBasicOverlays()(implicit p: Parameters) extends Se
   val button    = Seq.tabulate(5)(i => Overlay(ButtonOverlayKey, new ButtonNexysVideoShellPlacer(this, ButtonShellInput(number = i))(valName = ValName(s"button_$i"))))
   val ddr       = if (p(NexysVideoShellDDR)) Some(Overlay(DDROverlayKey, new DDRNexysVideoShellPlacer(this, DDRShellInput()))) else None
   val uart      = Overlay(UARTOverlayKey, new UARTNexysVideoShellPlacer(this, UARTShellInput()))
+  val lvds      = Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput()))
   val sdio      = Overlay(SPIOverlayKey, new SDIONexysVideoShellPlacer(this, SPIShellInput()))
   val jtag      = Overlay(JTAGDebugOverlayKey, new JTAGDebugNexysVideoShellPlacer(this, JTAGDebugShellInput()))
   val cjtag     = Overlay(cJTAGDebugOverlayKey, new cJTAGDebugNexysVideoShellPlacer(this, cJTAGDebugShellInput()))
