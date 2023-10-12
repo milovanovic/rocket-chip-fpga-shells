@@ -9,7 +9,7 @@ import sifive.fpgashells.devices.xilinx.xilinxnexysvideomig._
 import devices.xilinx.xilinxnexysvideodeserializer._
 import sifive.fpgashells.ip.xilinx._
 import sifive.fpgashells.shell._
-import lvdsphy.DataRXKey
+import datarx.DataRXKey
 
 class SysClockNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: ClockInputDesignInput, val shellInput: ClockInputShellInput)
   extends SingleEndedClockInputXilinxPlacedOverlay(name, designInput, shellInput)
