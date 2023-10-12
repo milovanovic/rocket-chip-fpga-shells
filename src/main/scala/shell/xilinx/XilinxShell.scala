@@ -14,6 +14,10 @@ class XDC(val name: String)
   protected def addConstraint(command: => String) { constraints = (() => command) +: constraints }
   ElaborationArtefacts.add(name, constraints.map(_()).reverse.mkString("\n") + "\n")
 
+  def addDiffIOStandard(io: IOPin, pin: String, standard: String, diffTerm: Boolean) {
+    if (diffTerm) addConstraint(s"set_property -dict { PACKAGE_PIN ${pin} IOSTANDARD ${standard} DIFF_TERM TRUE } ${io.sdcPin}")
+    else addConstraint(s"set_property -dict { PACKAGE_PIN ${pin} IOSTANDARD ${standard} DIFF_TERM FALSE } ${io.sdcPin}")
+  }
   def addBoardPin(io: IOPin, pin: String) {
     addConstraint(s"set_property BOARD_PIN {${pin}} ${io.sdcPin}")
   }

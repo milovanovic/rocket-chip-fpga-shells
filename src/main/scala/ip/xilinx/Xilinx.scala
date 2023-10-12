@@ -396,6 +396,33 @@ class SelectIO extends BlackBox {
   )
 }
 
+// SelectIO 7 Series
+class ILA_DATARX extends BlackBox {
+  val io = IO(new Bundle {
+    val clk = Input(Clock())
+    val probe0 = Input(UInt(16.W))
+    val probe1 = Input(UInt(16.W))
+    val probe2 = Input(UInt(16.W))
+    val probe3 = Input(UInt(16.W))
+    val probe4 = Input(UInt(1.W))
+    val probe5 = Input(UInt(1.W))
+  })
+
+  ElaborationArtefacts.add(
+    "ila.vivado.tcl",
+    """create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ILA_DATARX
+    set_property -dict [list \
+    CONFIG.C_PROBE5_WIDTH {1} \
+    CONFIG.C_PROBE4_WIDTH {1} \
+    CONFIG.C_PROBE3_WIDTH {16} \
+    CONFIG.C_PROBE2_WIDTH {16} \
+    CONFIG.C_PROBE1_WIDTH {16} \
+    CONFIG.C_PROBE0_WIDTH {16} \
+    CONFIG.C_DATA_DEPTH {1024} \
+    CONFIG.C_NUM_OF_PROBES {6}] [get_ips ILA_DATARX] """
+  )
+}
+
 //IP : xilinx mmcm with differential input clock
 class DiffSeries7MMCM(c : PLLParameters) extends BlackBox with PLLInstance {
   val io = IO(new Bundle {

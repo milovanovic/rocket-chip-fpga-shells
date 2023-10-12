@@ -2,9 +2,10 @@ package devices.xilinx.xilinxnexysvideodeserializer
 
 import chisel3._
 import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.util.ResetCatchAndSync
 import org.chipsalliance.cde.config.Parameters
 import sifive.fpgashells.clocks.{PLLInClockParameters, PLLOutClockParameters, PLLParameters}
-import sifive.fpgashells.ip.xilinx.{DiffSeries7MMCM, IBUFDS, SelectIO, Series7MMCM}
+import sifive.fpgashells.ip.xilinx.{DiffSeries7MMCM, SelectIO}
 
 case class XilinxNexysVideoDeserializerParams(
   channels : Int,
@@ -29,6 +30,8 @@ class NexysVideoDeserializerIO(val channels: Int) extends Bundle {
   val i_frame_p: Bool = Input(Bool())
   val i_frame_n: Bool = Input(Bool())
   // Outputs
+  val o_clock: Clock = Output(Clock())
+  val o_reset: Reset = Output(Bool())
   val o_frame: UInt = Output(UInt(8.W))
   val o_valid: UInt = Output(UInt(8.W))
   val o_data: Vec[UInt] = Output(Vec(channels, UInt(8.W)))
@@ -57,7 +60,9 @@ class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implic
     pll.io.reset := io.i_rst
     
     childClock := pll.io.clk_out2.get
-    childReset := io.i_rst && !pll.io.locked
+    childReset := ResetCatchAndSync(childClock, io.i_rst && !pll.io.locked)
+    io.o_clock := childClock
+    io.o_reset := childReset
 
     // 7 series SelectIO
     private val selectio_frame = Module(new SelectIO)

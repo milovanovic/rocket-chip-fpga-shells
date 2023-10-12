@@ -6,8 +6,10 @@ import freechips.rocketchip.diplomacy._
 import org.chipsalliance.cde.config._
 import sifive.fpgashells.clocks._
 import sifive.fpgashells.devices.xilinx.xilinxnexysvideomig._
+import devices.xilinx.xilinxnexysvideodeserializer._
 import sifive.fpgashells.ip.xilinx._
 import sifive.fpgashells.shell._
+import lvdsphy.DataRXKey
 
 class SysClockNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: ClockInputDesignInput, val shellInput: ClockInputShellInput)
   extends SingleEndedClockInputXilinxPlacedOverlay(name, designInput, shellInput)
@@ -207,6 +209,8 @@ class UARTNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val she
 class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: LVDSDesignInput, val shellInput: LVDSShellInput)
   extends LVDSXilinxPlacedOverlay(name, designInput, shellInput, 4)
 {
+  val deser: XilinxNexysVideoDeserializer = LazyModule(new XilinxNexysVideoDeserializer(XilinxNexysVideoDeserializerParams(channels=4)))
+
   shell { InModuleBody {
     val packagePinsWithPackageIOs = Seq(
       ("C18", IOPin(io.i_clk_p)),     // Sch=FMC_CLK1_M2C_P
@@ -226,10 +230,9 @@ class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name:
     )
 
     packagePinsWithPackageIOs foreach { case (pin, io) => {
-      shell.xdc.addPackagePin(io, pin)
-      shell.xdc.addIOStandard(io, "LVDS_25")
-      shell.xdc.addIOB(io)
+      shell.xdc.addDiffIOStandard(io, pin, standard = "LVDS_25", diffTerm = true)
     } }
+    shell.sdc.addGroup(clocks = Seq("clk_pll_o"), pins = Seq(deser.module.io.o_clock))
   } }
 }
 class LVDSNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: LVDSShellInput)(implicit val valName: ValName)
@@ -369,7 +372,7 @@ abstract class NexysVideoShellBasicOverlays()(implicit p: Parameters) extends Se
   val button    = Seq.tabulate(5)(i => Overlay(ButtonOverlayKey, new ButtonNexysVideoShellPlacer(this, ButtonShellInput(number = i))(valName = ValName(s"button_$i"))))
   val ddr       = if (p(NexysVideoShellDDR)) Some(Overlay(DDROverlayKey, new DDRNexysVideoShellPlacer(this, DDRShellInput()))) else None
   val uart      = Overlay(UARTOverlayKey, new UARTNexysVideoShellPlacer(this, UARTShellInput()))
-  val lvds      = Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput()))
+  val lvds      = if(p(DataRXKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput()))) else None
   val sdio      = Overlay(SPIOverlayKey, new SDIONexysVideoShellPlacer(this, SPIShellInput()))
   val jtag      = Overlay(JTAGDebugOverlayKey, new JTAGDebugNexysVideoShellPlacer(this, JTAGDebugShellInput()))
   val cjtag     = Overlay(cJTAGDebugOverlayKey, new cJTAGDebugNexysVideoShellPlacer(this, cJTAGDebugShellInput()))
