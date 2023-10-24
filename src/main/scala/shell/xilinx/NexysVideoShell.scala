@@ -246,7 +246,6 @@ class ETHNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: 
 {
   shell { InModuleBody {
     val packagePinsWithPackageIOs = Seq(
-      ("U7",   IOPin(io.phy_resetn)),   // Sch=ETH_RST
       ("AA16", IOPin(io.mdc)),          // Sch=ETH_MDC
       ("Y16",  IOPin(io.mdio)),         // Sch=ETH_MDIO
       ("AB16", IOPin(io.rgmii_rxd(0))), // Sch=ETH_RXD0
@@ -266,6 +265,9 @@ class ETHNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: 
       shell.xdc.addPackagePin(io, pin)
       shell.xdc.addIOStandard(io, standard = "LVCMOS25")
     }
+    // Ethernet reset is on bank 34 which has VCC=3.3V
+    shell.xdc.addPackagePin(IOPin(io.phy_resetn), "U7")
+    shell.xdc.addIOStandard(IOPin(io.phy_resetn), standard = "LVCMOS33")
   } }
 }
 class ETHNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: ETHShellInput)(implicit val valName: ValName)
@@ -287,7 +289,7 @@ object LEDNexysVideoPinConstraints{
   )
 }
 class LEDNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: LEDDesignInput, val shellInput: LEDShellInput)
-  extends LEDXilinxPlacedOverlay(name, designInput, shellInput, packagePin = Some(LEDNexysVideoPinConstraints.pins(shellInput.number)))
+  extends LEDXilinxPlacedOverlay(name, designInput, shellInput, packagePin = Some(LEDNexysVideoPinConstraints.pins(shellInput.number)), ioStandard = "LVCMOS25")
 class LEDNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: LEDShellInput)(implicit val valName: ValName)
   extends LEDShellPlacer[NexysVideoShellBasicOverlays] {
   def place(designInput: LEDDesignInput) = new LEDNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
