@@ -7,9 +7,9 @@ import org.chipsalliance.cde.config._
 import sifive.fpgashells.clocks._
 import sifive.fpgashells.devices.xilinx.xilinxnexysvideomig._
 import devices.xilinx.xilinxnexysvideodeserializer._
+import dspblocks.testchain.DSPChainKey
 import sifive.fpgashells.ip.xilinx._
 import sifive.fpgashells.shell._
-import datarx.DataRXKey
 
 class SysClockNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: ClockInputDesignInput, val shellInput: ClockInputShellInput)
   extends SingleEndedClockInputXilinxPlacedOverlay(name, designInput, shellInput)
@@ -240,6 +240,39 @@ class LVDSNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val she
   def place(designInput: LVDSDesignInput) = new LVDSNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
 }
 
+// Ethernet
+class ETHNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: ETHDesignInput, val shellInput: ETHShellInput)
+  extends ETHXilinxPlacedOverlay(name, designInput, shellInput)
+{
+  shell { InModuleBody {
+    val packagePinsWithPackageIOs = Seq(
+      ("U7",   IOPin(io.phy_resetn)),   // Sch=ETH_RST
+      ("AA16", IOPin(io.mdc)),          // Sch=ETH_MDC
+      ("Y16",  IOPin(io.mdio)),         // Sch=ETH_MDIO
+      ("AB16", IOPin(io.rgmii_rxd(0))), // Sch=ETH_RXD0
+      ("AA15", IOPin(io.rgmii_rxd(1))), // Sch=ETH_RXD1
+      ("AB15", IOPin(io.rgmii_rxd(2))), // Sch=ETH_RXD2
+      ("AB11", IOPin(io.rgmii_rxd(3))), // Sch=ETH_RXD3
+      ("Y12",  IOPin(io.rgmii_txd(0))), // Sch=ETH_TXD0
+      ("W12",  IOPin(io.rgmii_txd(1))), // Sch=ETH_TXD1
+      ("W11",  IOPin(io.rgmii_txd(1))), // Sch=ETH_TXD2
+      ("Y11",  IOPin(io.rgmii_txd(2))), // Sch=ETH_TXD3
+      ("AA14", IOPin(io.rgmii_txc)),    // Sch=ETH_TXCK
+      ("V10",  IOPin(io.rgmii_tx_ctl)), // Sch=ETH_TXCTL
+      ("V13",  IOPin(io.rgmii_rxc)),    // Sch=ETH_RXCK
+      ("W10",  IOPin(io.rgmii_rx_ctl))  // Sch=ETH_RXCTL
+    )
+    packagePinsWithPackageIOs foreach { case (pin, io) =>
+      shell.xdc.addPackagePin(io, pin)
+      shell.xdc.addIOStandard(io, standard = "LVCMOS25")
+    }
+  } }
+}
+class ETHNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: ETHShellInput)(implicit val valName: ValName)
+  extends ETHShellPlacer[NexysVideoShellBasicOverlays] {
+  def place(designInput: ETHDesignInput) = new ETHNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
+}
+
 // 8 LEDs
 object LEDNexysVideoPinConstraints{
   val pins = Seq(
@@ -372,7 +405,8 @@ abstract class NexysVideoShellBasicOverlays()(implicit p: Parameters) extends Se
   val button    = Seq.tabulate(5)(i => Overlay(ButtonOverlayKey, new ButtonNexysVideoShellPlacer(this, ButtonShellInput(number = i))(valName = ValName(s"button_$i"))))
   val ddr       = if (p(NexysVideoShellDDR)) Some(Overlay(DDROverlayKey, new DDRNexysVideoShellPlacer(this, DDRShellInput()))) else None
   val uart      = Overlay(UARTOverlayKey, new UARTNexysVideoShellPlacer(this, UARTShellInput()))
-  val lvds      = if(p(DataRXKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput()))) else None
+  val lvds      = if (p(DSPChainKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput()))) else None
+  val eth       = if (p(DSPChainKey).isDefined) Some(Overlay(ETHOverlayKey, new ETHNexysVideoShellPlacer(this, ETHShellInput()))) else None
   val sdio      = Overlay(SPIOverlayKey, new SDIONexysVideoShellPlacer(this, SPIShellInput()))
   val jtag      = Overlay(JTAGDebugOverlayKey, new JTAGDebugNexysVideoShellPlacer(this, JTAGDebugShellInput()))
   val cjtag     = Overlay(cJTAGDebugOverlayKey, new cJTAGDebugNexysVideoShellPlacer(this, cJTAGDebugShellInput()))
