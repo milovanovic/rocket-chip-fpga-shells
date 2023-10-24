@@ -254,8 +254,8 @@ class ETHNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: 
       ("AB11", IOPin(io.rgmii_rxd(3))), // Sch=ETH_RXD3
       ("Y12",  IOPin(io.rgmii_txd(0))), // Sch=ETH_TXD0
       ("W12",  IOPin(io.rgmii_txd(1))), // Sch=ETH_TXD1
-      ("W11",  IOPin(io.rgmii_txd(1))), // Sch=ETH_TXD2
-      ("Y11",  IOPin(io.rgmii_txd(2))), // Sch=ETH_TXD3
+      ("W11",  IOPin(io.rgmii_txd(2))), // Sch=ETH_TXD2
+      ("Y11",  IOPin(io.rgmii_txd(3))), // Sch=ETH_TXD3
       ("AA14", IOPin(io.rgmii_txc)),    // Sch=ETH_TXCK
       ("V10",  IOPin(io.rgmii_tx_ctl)), // Sch=ETH_TXCTL
       ("V13",  IOPin(io.rgmii_rxc)),    // Sch=ETH_RXCK
