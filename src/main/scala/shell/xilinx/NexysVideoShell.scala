@@ -232,7 +232,7 @@ class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name:
     packagePinsWithPackageIOs foreach { case (pin, io) => {
       shell.xdc.addDiffIOStandard(io, pin, standard = "LVDS_25", diffTerm = true)
     } }
-    shell.sdc.addGroup(clocks = Seq("clk_pll_o"), pins = Seq(deser.module.io.o_clock))
+    shell.sdc.addGroup(customPins = Seq("deser_pll/clk_out1", "deser_pll/clk_out2"))
   } }
 }
 class LVDSNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: LVDSShellInput)(implicit val valName: ValName)
@@ -265,6 +265,9 @@ class ETHNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: 
       shell.xdc.addPackagePin(io, pin)
       shell.xdc.addIOStandard(io, standard = "LVCMOS25")
     }
+    // Ethernet clock
+    shell.sdc.addClock("rgmii_rxc", IOPin(io.rgmii_rxc), 125)
+    shell.sdc.addGroup(clocks = Seq("rgmii_rxc"))
     // Ethernet reset is on bank 34 which has VCC=3.3V
     shell.xdc.addPackagePin(IOPin(io.phy_resetn), "U7")
     shell.xdc.addIOStandard(IOPin(io.phy_resetn), standard = "LVCMOS33")

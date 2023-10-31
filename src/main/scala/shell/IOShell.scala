@@ -103,7 +103,7 @@ class SDC(val name: String)
     addRawClock(s"create_generated_clock -name ${name} -divide_by ${div} -source ${source.sdcPin} ${sink.sdcPin}")
   }
 
-  def addGroup(clocks: => Seq[String] = Nil, pins: => Seq[IOPin] = Nil) {
+  def addGroup(clocks: => Seq[String] = Nil, pins: => Seq[IOPin] = Nil, customPins: => Seq[String] = Nil) {
     def thunk = {
       val clocksList = clocks
       val (pinsList, portsList) = pins.map(_.name).partition(_.contains("/"))
@@ -111,8 +111,9 @@ class SDC(val name: String)
       val clocksStr = (" [get_clocks {" +: clocksList).mkString(sep) + " \\\n    }]"
       val pinsStr   = (" [get_clocks -of_objects [get_pins {"  +: pinsList ).mkString(sep) + " \\\n    }]]"
       val portsStr  = (" [get_clocks -of_objects [get_ports {" +: portsList).mkString(sep) + " \\\n    }]]"
-      val str = s"  -group [list${if (clocksList.isEmpty) "" else clocksStr}${if (pinsList.isEmpty) "" else pinsStr}${if (portsList.isEmpty) "" else portsStr}]"  
-      if (clocksList.isEmpty && pinsList.isEmpty && portsList.isEmpty) "" else str
+      val customStr = (" [get_clocks -of_objects [get_pins {"  +: customPins ).mkString(sep) + " \\\n    }]]"
+      val str = s"  -group [list${if (clocksList.isEmpty) "" else clocksStr}${if (pinsList.isEmpty) "" else pinsStr}${if (portsList.isEmpty) "" else portsStr}${if (customPins.isEmpty) "" else customStr}]"
+      if (clocksList.isEmpty && pinsList.isEmpty && portsList.isEmpty && customPins.isEmpty) "" else str
     }
     addRawGroup(thunk)
   }

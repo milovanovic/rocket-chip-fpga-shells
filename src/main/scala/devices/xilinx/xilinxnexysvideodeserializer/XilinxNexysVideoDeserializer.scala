@@ -10,7 +10,7 @@ import sifive.fpgashells.ip.xilinx.{DiffSeries7MMCM, SelectIO}
 case class XilinxNexysVideoDeserializerParams(
   channels : Int,
   pll: PLLParameters = PLLParameters(
-    name = "lvds_pll",
+    name = "deser_pll",
     input = PLLInClockParameters(freqMHz = 300.0),
     req = Seq(
       PLLOutClockParameters(freqMHz = 300.0),
@@ -40,23 +40,16 @@ class NexysVideoDeserializerIO(val channels: Int) extends Bundle {
 }
 
 class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implicit p: Parameters) extends LazyModule {
-  
+
   lazy val module = new Impl
   class Impl extends LazyRawModuleImp(this) {
     val io: NexysVideoDeserializerIO = IO(new NexysVideoDeserializerIO(c.channels))
 
-//    // Differential buffer
-//    val ibufds: IBUFDS = Module(new IBUFDS)
-//    ibufds.suggestName(s"${name}_ibufds")
     // PLL
     val pll: DiffSeries7MMCM = Module(new DiffSeries7MMCM(c.pll))
 
-//    // Connect Buffer and PLL
-//    ibufds.io.I := io.i_clk_p
-//    ibufds.io.IB := io.i_clk_n
-
-    pll.io.clk_in1_p := io.i_clk_p //ibufds.io.O
-    pll.io.clk_in1_n := io.i_clk_n //ibufds.io.O
+    pll.io.clk_in1_p := io.i_clk_p
+    pll.io.clk_in1_n := io.i_clk_n
     pll.io.reset := io.i_rst
     
     childClock := pll.io.clk_out2.get
