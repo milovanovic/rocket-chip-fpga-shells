@@ -11,10 +11,10 @@ case class XilinxNexysVideoDeserializerParams(
   channels : Int,
   pll: PLLParameters = PLLParameters(
     name = "lvds_pll",
-    input = PLLInClockParameters(freqMHz = 450.0),
+    input = PLLInClockParameters(freqMHz = 300.0),
     req = Seq(
-      PLLOutClockParameters(freqMHz = 450.0),
-      PLLOutClockParameters(freqMHz = 112.5)
+      PLLOutClockParameters(freqMHz = 300.0),
+      PLLOutClockParameters(freqMHz = 75.0)
     )
   )
 )
