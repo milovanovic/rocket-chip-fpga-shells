@@ -10,7 +10,8 @@ import org.chipsalliance.cde.config.Parameters
 import sifive.fpgashells.ip.xilinx.nexysvideomig.{NexysVideoMIGIOClocksReset, NexysVideoMIGIODDR, nexysvideomig}
 
 case class XilinxNexysVideoMIGParams(
-  address : Seq[AddressSet]
+  address : Seq[AddressSet],
+  beatBytes: Int
 )
 
 class XilinxNexysVideoMIGPads(depth: BigInt) extends NexysVideoMIGIODDR(depth) {
@@ -37,7 +38,7 @@ class XilinxNexysVideoMIGIsland(c: XilinxNexysVideoMIGParams, val crossing: Cloc
       executable    = true,
       supportsWrite = TransferSizes(1, 64),
       supportsRead  = TransferSizes(1, 64))),
-    beatBytes = 8)))
+    beatBytes = c.beatBytes)))
 
   lazy val module = new Impl
   class Impl extends LazyRawModuleImp(this) {

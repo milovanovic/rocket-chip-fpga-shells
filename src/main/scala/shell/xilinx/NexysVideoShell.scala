@@ -354,7 +354,7 @@ class DDRNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: 
   ddrClk1 := di.wrangler := ddrGroup := di.corePLL
   ddrClk2 := di.wrangler := ddrGroup
   
-  val migParams = XilinxNexysVideoMIGParams(address = AddressSet.misaligned(di.baseAddress, size))
+  val migParams = XilinxNexysVideoMIGParams(address = AddressSet.misaligned(di.baseAddress, size), beatBytes = di.beatBytes)
   val mig = LazyModule(new XilinxNexysVideoMIG(migParams))
   val ddrUI     = shell { ClockSourceNode(freqMHz = 100) }
   val areset    = shell { ClockSinkNode(Seq(ClockSinkParameters())) }

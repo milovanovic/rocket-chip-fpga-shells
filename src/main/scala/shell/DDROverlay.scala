@@ -11,7 +11,8 @@ case class DDRDesignInput(
   baseAddress: BigInt,
   wrangler: ClockAdapterNode,
   corePLL: PLLNode,
-  vc7074gbdimm: Boolean = false)(
+  vc7074gbdimm: Boolean = false,
+  beatBytes: Int = 8)(
   implicit val p: Parameters)
 case class DDROverlayOutput(ddr: TLInwardNode)
 trait DDRShellPlacer[Shell] extends ShellPlacer[DDRDesignInput, DDRShellInput, DDROverlayOutput]
