@@ -213,20 +213,20 @@ class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name:
 
   shell { InModuleBody {
     val packagePinsWithPackageIOs = Seq(
-      ("C18", IOPin(io.i_clk_p)),     // Sch=FMC_CLK1_M2C_P
-      ("C19", IOPin(io.i_clk_n)),     // Sch=FMC_CLK1_M2C_N
-      ("C13", IOPin(io.i_valid_p)),   // Sch=FMC_LA28_P
-      ("B13", IOPin(io.i_valid_n)),   // Sch=FMC_LA28_N
-      ("C14", IOPin(io.i_frame_p)),   // Sch=FMC_LA29_P
-      ("C15", IOPin(io.i_frame_n)),   // Sch=FMC_LA29_N
-      ("E13", IOPin(io.i_data_p(0))), // Sch=FMC_LA31_P
-      ("E14", IOPin(io.i_data_n(0))), // Sch=FMC_LA31_N
-      ("A13", IOPin(io.i_data_p(1))), // Sch=FMC_LA30_P
-      ("A14", IOPin(io.i_data_n(1))), // Sch=FMC_LA30_N
-      ("F13", IOPin(io.i_data_p(2))), // Sch=FMC_LA33_P
-      ("F14", IOPin(io.i_data_n(2))), // Sch=FMC_LA33_N
-      ("A15", IOPin(io.i_data_p(3))), // Sch=FMC_LA32_P
-      ("A16", IOPin(io.i_data_n(3)))  // Sch=FMC_LA32_N
+      ("B17", IOPin(io.i_clk_p)),     // Sch=FMC_LA17_CC_P
+      ("B18", IOPin(io.i_clk_n)),     // Sch=FMC_LA17_CC_N
+      ("M13", IOPin(io.i_valid_p)),   // Sch=FMC_LA07_P
+      ("L13", IOPin(io.i_valid_n)),   // Sch=FMC_LA07_N
+      ("A18", IOPin(io.i_frame_p)),   // Sch=FMC_LA19_P
+      ("A19", IOPin(io.i_frame_n)),   // Sch=FMC_LA19_N
+      ("L16", IOPin(io.i_data_p(0))), // Sch=FMC_LA15_P
+      ("K16", IOPin(io.i_data_n(0))), // Sch=FMC_LA15_N
+      ("G17", IOPin(io.i_data_p(1))), // Sch=FMC_LA16_P
+      ("G18", IOPin(io.i_data_n(1))), // Sch=FMC_LA16_N
+      ("L14", IOPin(io.i_data_p(2))), // Sch=FMC_LA11_P
+      ("L15", IOPin(io.i_data_n(2))), // Sch=FMC_LA11_N
+      ("L19", IOPin(io.i_data_p(3))), // Sch=FMC_LA12_P
+      ("L20", IOPin(io.i_data_n(3)))  // Sch=FMC_LA12_N
     )
 
     packagePinsWithPackageIOs foreach { case (pin, io) => {
