@@ -207,32 +207,75 @@ class UARTNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val she
 
 // LVDS
 class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: LVDSDesignInput, val shellInput: LVDSShellInput)
-  extends LVDSXilinxPlacedOverlay(name, designInput, shellInput, 4)
+  extends LVDSXilinxPlacedOverlay(name, designInput, shellInput)
 {
-  val deser: XilinxNexysVideoDeserializer = LazyModule(new XilinxNexysVideoDeserializer(XilinxNexysVideoDeserializerParams(channels=4)))
+  val deser: XilinxNexysVideoDeserializer = LazyModule(new XilinxNexysVideoDeserializer(XilinxNexysVideoDeserializerParams(channels=4, chips = 2)))
 
   shell { InModuleBody {
-    val packagePinsWithPackageIOs = Seq(
-      ("B17", IOPin(io.i_clk_p)),     // Sch=FMC_LA17_CC_P
-      ("B18", IOPin(io.i_clk_n)),     // Sch=FMC_LA17_CC_N
-      ("M13", IOPin(io.i_valid_p)),   // Sch=FMC_LA07_P
-      ("L13", IOPin(io.i_valid_n)),   // Sch=FMC_LA07_N
-      ("A18", IOPin(io.i_frame_p)),   // Sch=FMC_LA19_P
-      ("A19", IOPin(io.i_frame_n)),   // Sch=FMC_LA19_N
-      ("L16", IOPin(io.i_data_p(0))), // Sch=FMC_LA15_P
-      ("K16", IOPin(io.i_data_n(0))), // Sch=FMC_LA15_N
-      ("G17", IOPin(io.i_data_p(1))), // Sch=FMC_LA16_P
-      ("G18", IOPin(io.i_data_n(1))), // Sch=FMC_LA16_N
-      ("L14", IOPin(io.i_data_p(2))), // Sch=FMC_LA11_P
-      ("L15", IOPin(io.i_data_n(2))), // Sch=FMC_LA11_N
-      ("L19", IOPin(io.i_data_p(3))), // Sch=FMC_LA12_P
-      ("L20", IOPin(io.i_data_n(3)))  // Sch=FMC_LA12_N
-    )
+    val packagePinsWithPackageIOs =  if (si.chips == 1) {
+      // AWR2243 pins
+      Seq(
+        ("B17", IOPin(io.lvds.head.i_clk_p)),     // Sch=FMC_LA17_CC_P
+        ("B18", IOPin(io.lvds.head.i_clk_n)),     // Sch=FMC_LA17_CC_N
+        ("M13", IOPin(io.lvds.head.i_valid_p)),   // Sch=FMC_LA07_P
+        ("L13", IOPin(io.lvds.head.i_valid_n)),   // Sch=FMC_LA07_N
+        ("A18", IOPin(io.lvds.head.i_frame_p)),   // Sch=FMC_LA19_P
+        ("A19", IOPin(io.lvds.head.i_frame_n)),   // Sch=FMC_LA19_N
+        ("L16", IOPin(io.lvds.head.i_data_p(0))), // Sch=FMC_LA15_P
+        ("K16", IOPin(io.lvds.head.i_data_n(0))), // Sch=FMC_LA15_N
+        ("G17", IOPin(io.lvds.head.i_data_p(1))), // Sch=FMC_LA16_P
+        ("G18", IOPin(io.lvds.head.i_data_n(1))), // Sch=FMC_LA16_N
+        ("L14", IOPin(io.lvds.head.i_data_p(2))), // Sch=FMC_LA11_P
+        ("L15", IOPin(io.lvds.head.i_data_n(2))), // Sch=FMC_LA11_N
+        ("L19", IOPin(io.lvds.head.i_data_p(3))), // Sch=FMC_LA12_P
+        ("L20", IOPin(io.lvds.head.i_data_n(3)))  // Sch=FMC_LA12_N
+      )
+    }
+    else {
+      // MMWCAS-RF pins
+      Seq(
+        ("B17", IOPin(io.lvds.head.i_clk_p)),     // Sch=IO_L11P_T1_SRCC_16
+        ("B18", IOPin(io.lvds.head.i_clk_n)),     // Sch=IO_L11N_T1_SRCC_16
+        ("F18", IOPin(io.lvds.head.i_valid_p)),   // Sch=IO_L15N_T2_DQS_16
+        ("E18", IOPin(io.lvds.head.i_valid_n)),   // Sch=IO_L15N_T2_DQS_16
+        ("F16", IOPin(io.lvds.head.i_frame_p)),   // Sch=IO_L2P_T0_16
+        ("E17", IOPin(io.lvds.head.i_frame_n)),   // Sch=IO_L2N_T0_16
+        ("F19", IOPin(io.lvds.head.i_data_p(0))), // Sch=IO_L18P_T2_16
+        ("F20", IOPin(io.lvds.head.i_data_n(0))), // Sch=IO_L18N_T2_16
+        ("A18", IOPin(io.lvds.head.i_data_p(1))), // Sch=IO_L17P_T2_16
+        ("A19", IOPin(io.lvds.head.i_data_n(1))), // Sch=IO_L17N_T2_16
+        ("D17", IOPin(io.lvds.head.i_data_p(2))), // Sch=IO_L12P_T1_MRCC_16
+        ("C17", IOPin(io.lvds.head.i_data_n(2))), // Sch=IO_L12N_T1_MRCC_16
+        ("E21", IOPin(io.lvds.head.i_data_p(3))), // Sch=IO_L23P_T3_16
+        ("D21", IOPin(io.lvds.head.i_data_n(3))), // Sch=IO_L23N_T3_16
 
-    packagePinsWithPackageIOs foreach { case (pin, io) => {
+        ("K17", IOPin(io.lvds(1).i_clk_p)),     // Sch=IO_L11P_T1_SRCC_16
+        ("J17", IOPin(io.lvds(1).i_clk_n)),     // Sch=IO_L21P_T3_DQS_15
+        ("M13", IOPin(io.lvds(1).i_valid_p)),   // Sch=IO_L20P_T3_A20_15
+        ("L13", IOPin(io.lvds(1).i_valid_n)),   // Sch=IO_L20N_T3_A19_15
+        ("M18", IOPin(io.lvds(1).i_frame_p)),   // Sch=IO_L16P_T2_A28_15
+        ("L18", IOPin(io.lvds(1).i_frame_n)),   // Sch=IO_L16N_T2_A27_15
+        ("J20", IOPin(io.lvds(1).i_data_p(0))), // Sch=IO_L11P_T1_SRCC_15
+        ("J21", IOPin(io.lvds(1).i_data_n(0))), // Sch=IO_L11N_T1_SRCC_15
+        ("N22", IOPin(io.lvds(1).i_data_p(1))), // Sch=IO_L15P_T2_DQS_15
+        ("M22", IOPin(io.lvds(1).i_data_n(1))), // Sch=IO_L15N_T2_DQS_ADV_B_15
+        ("H20", IOPin(io.lvds(1).i_data_p(2))), // Sch=IO_L8P_T1_AD10P_15
+        ("G20", IOPin(io.lvds(1).i_data_n(2))), // Sch=IO_L8N_T1_AD10N_15
+        ("L19", IOPin(io.lvds(1).i_data_p(3))), // Sch=IO_L14P_T2_SRCC_15
+        ("L20", IOPin(io.lvds(1).i_data_n(3)))  // Sch=IO_L14N_T2_SRCC_15
+      )
+    }
+
+    packagePinsWithPackageIOs foreach { case (pin, io) =>
       shell.xdc.addDiffIOStandard(io, pin, standard = "LVDS_25", diffTerm = true)
-    } }
-    shell.sdc.addGroup(customPins = Seq("deser_pll/clk_out1", "deser_pll/clk_out2"))
+    }
+    if (si.chips == 1) shell.sdc.addGroup(customPins = Seq("deser_pll/clk_out1", "deser_pll/clk_out2"))
+    else {
+      shell.sdc.addGroup(customPins = Seq("deser_pll_0/clk_out1", "deser_pll_0/clk_out2"))
+      shell.sdc.addGroup(customPins = Seq("deser_pll_1/clk_out1", "deser_pll_1/clk_out2"))
+      shell.xdc.addClockDedicatedRoute("deser_pll_0/inst/clk_in1_deser_pll")
+      shell.xdc.addClockDedicatedRoute("deser_pll_1/inst/clk_in1_deser_pll")
+    }
   } }
 }
 class LVDSNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: LVDSShellInput)(implicit val valName: ValName)
@@ -410,7 +453,7 @@ abstract class NexysVideoShellBasicOverlays()(implicit p: Parameters) extends Se
   val button    = Seq.tabulate(5)(i => Overlay(ButtonOverlayKey, new ButtonNexysVideoShellPlacer(this, ButtonShellInput(number = i))(valName = ValName(s"button_$i"))))
   val ddr       = if (p(NexysVideoShellDDR)) Some(Overlay(DDROverlayKey, new DDRNexysVideoShellPlacer(this, DDRShellInput()))) else None
   val uart      = Overlay(UARTOverlayKey, new UARTNexysVideoShellPlacer(this, UARTShellInput()))
-  val lvds      = if (p(DSPChainKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput()))) else None
+  val lvds      = if (p(DSPChainKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput(p(DSPChainKey).get.dataChannels, p(DSPChainKey).get.dataChips)))) else None
   val eth       = if (p(DSPChainKey).isDefined) Some(Overlay(ETHOverlayKey, new ETHNexysVideoShellPlacer(this, ETHShellInput()))) else None
   val sdio      = Overlay(SPIOverlayKey, new SDIONexysVideoShellPlacer(this, SPIShellInput()))
   val jtag      = Overlay(JTAGDebugOverlayKey, new JTAGDebugNexysVideoShellPlacer(this, JTAGDebugShellInput()))

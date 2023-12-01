@@ -508,6 +508,91 @@ class DiffSeries7MMCM(c : PLLParameters) extends BlackBox with PLLInstance {
        |${checks}""".stripMargin)
 }
 
+//IP : xilinx pll with differential input clock
+class DiffSeries7PLL(c : PLLParameters) extends BlackBox with PLLInstance {
+  val io = IO(new Bundle {
+    val clk_in1_p   = Input(Clock())
+    val clk_in1_n   = Input(Clock())
+    val clk_out1  = if (c.req.size >= 1) Some(Output(Clock())) else None
+    val clk_out2  = if (c.req.size >= 2) Some(Output(Clock())) else None
+    val clk_out3  = if (c.req.size >= 3) Some(Output(Clock())) else None
+    val clk_out4  = if (c.req.size >= 4) Some(Output(Clock())) else None
+    val clk_out5  = if (c.req.size >= 5) Some(Output(Clock())) else None
+    val clk_out6  = if (c.req.size >= 6) Some(Output(Clock())) else None
+    val clk_out7  = if (c.req.size >= 7) Some(Output(Clock())) else None
+    val reset     = Input(Bool())
+    val locked    = Output(Bool())
+  })
+
+  val moduleName = c.name
+  override def desiredName = c.name
+
+  def getClocks = Seq() ++ io.clk_out1 ++ io.clk_out2 ++
+    io.clk_out3 ++ io.clk_out4 ++
+    io.clk_out5 ++ io.clk_out6 ++
+    io.clk_out7
+  def getInput = io.clk_in1_p
+  def getReset = Some(io.reset)
+  def getLocked = io.locked
+  def getClockNames = Seq.tabulate (c.req.size) { i =>
+    s"${c.name}/inst/mmcm_adv_inst/CLKOUT${i}"
+  }
+
+  val used = Seq.tabulate(7) { i =>
+    s" CONFIG.CLKOUT${i+1}_USED {${i < c.req.size}} \\\n"
+  }.mkString
+
+  val outputs = c.req.zipWithIndex.map { case (r, i) =>
+    s""" CONFIG.CLKOUT${i+1}_REQUESTED_OUT_FREQ {${r.freqMHz}} \\
+       | CONFIG.CLKOUT${i+1}_REQUESTED_PHASE {${r.phaseDeg}} \\
+       | CONFIG.CLKOUT${i+1}_REQUESTED_DUTY_CYCLE {${r.dutyCycle}} \\
+       |""".stripMargin
+  }.mkString
+
+  val checks = c.req.zipWithIndex.map { case (r, i) =>
+    val f = if (i == 0) "_F" else ""
+    val phaseMin = r.phaseDeg - r.phaseErrorDeg
+    val phaseMax = r.phaseDeg + r.phaseErrorDeg
+    val freqMin = r.freqMHz * (1 - r.freqErrorPPM / 1000000)
+    val freqMax = r.freqMHz * (1 + r.freqErrorPPM / 1000000)
+    s"""set jitter [get_property CONFIG.CLKOUT${i+1}_JITTER [get_ips ${moduleName}]]
+       |if {$$jitter > ${r.jitterPS}} {
+       |  puts "Output jitter $$jitter ps exceeds required limit of ${r.jitterPS}"
+       |  exit 1
+       |}
+       |set phase [get_property CONFIG.MMCM_CLKOUT${i}_PHASE [get_ips ${moduleName}]]
+       |if {$$phase < ${phaseMin} || $$phase > ${phaseMax}} {
+       |  puts "Achieved phase $$phase degrees is outside tolerated range ${phaseMin}-${phaseMax}"
+       |  exit 1
+       |}
+       |set div2 [get_property CONFIG.MMCM_CLKOUT${i}_DIVIDE${f} [get_ips ${moduleName}]]
+       |set freq [expr { ${c.input.freqMHz} * $$mult / $$div1 / $$div2 }]
+       |if {$$freq < ${freqMin} || $$freq > ${freqMax}} {
+       |  puts "Achieved frequency $$freq MHz is outside tolerated range ${freqMin}-${freqMax}"
+       |  exit 1
+       |}
+       |puts "Achieve frequency $$freq MHz phase $$phase degrees jitter $$jitter ps"
+       |""".stripMargin
+  }.mkString
+
+
+  val aligned = if (c.input.feedback) " CONFIG.USE_PHASE_ALIGNMENT {true} \\\n" else ""
+
+  ElaborationArtefacts.add(s"${moduleName}.vivado.tcl",
+    s"""create_ip -name clk_wiz -vendor xilinx.com -library ip -module_name \\
+       | ${moduleName} -dir $$ipdir -force
+       |set_property -dict [list CONFIG.PRIMITIVE {PLL} \\
+       | CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \\
+       | CONFIG.PRIM_SOURCE {Differential_clock_capable_pin} \\
+       | CONFIG.NUM_OUT_CLKS {${c.req.size.toString}} \\
+       | CONFIG.PRIM_IN_FREQ {${c.input.freqMHz.toString}} \\
+       | CONFIG.CLKIN1_JITTER_PS {${c.input.jitter}} \\
+       |${used}${aligned}${outputs}] [get_ips ${moduleName}]
+       |set mult [get_property CONFIG.MMCM_CLKFBOUT_MULT_F [get_ips ${moduleName}]]
+       |set div1 [get_property CONFIG.MMCM_DIVCLK_DIVIDE [get_ips ${moduleName}]]
+       |${checks}""".stripMargin)
+}
+
 /*
    Copyright 2016 SiFive, Inc.
 

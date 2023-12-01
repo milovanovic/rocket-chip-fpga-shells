@@ -6,15 +6,14 @@ import devices.xilinx.xilinxnexysvideodeserializer.NexysVideoDeserializerIO
 import freechips.rocketchip.diplomacy._
 import org.chipsalliance.cde.config._
 
-case class LVDSShellInput(index: Int = 0)
+case class LVDSShellInput(channels: Int, chips: Int)
 case class LVDSDesignInput(node: BundleBridgeSource[NexysVideoDeserializerIO])(implicit val p: Parameters)
 case class LVDSOverlayOutput()
 case object LVDSOverlayKey extends Field[Seq[DesignPlacer[LVDSDesignInput, LVDSShellInput, LVDSOverlayOutput]]](Nil)
 trait LVDSShellPlacer[Shell] extends ShellPlacer[LVDSDesignInput, LVDSShellInput, LVDSOverlayOutput]
 
-// Tack on cts, rts signals available on some FPGAs. They are currently unused
-// by our designs.
-class ShellLVDSPortIO(val channels: Int) extends Bundle {
+
+class LVDSPortBundle(val channels: Int) extends Bundle {
   // LVDS clock, data, frame and valid
   val i_clk_p: Analog = Analog(1.W)
   val i_clk_n: Analog = Analog(1.W)
@@ -26,13 +25,17 @@ class ShellLVDSPortIO(val channels: Int) extends Bundle {
   val i_frame_n: Analog = Analog(1.W)
 }
 
+class ShellLVDSPortIO(val channels: Int, val chips: Int = 1) extends Bundle {
+  val lvds: Vec[LVDSPortBundle] = Vec(chips, new LVDSPortBundle(channels))
+}
+
 abstract class LVDSPlacedOverlay(
-                                  val name: String, val di: LVDSDesignInput, val si: LVDSShellInput, val channels: Int)
+                                  val name: String, val di: LVDSDesignInput, val si: LVDSShellInput)
   extends IOPlacedOverlay[ShellLVDSPortIO, LVDSDesignInput, LVDSShellInput, LVDSOverlayOutput]
 {
   implicit val p: Parameters = di.p
 
-  def ioFactory = new ShellLVDSPortIO(channels)
+  def ioFactory = new ShellLVDSPortIO(si.channels, si.chips)
 
   val lvdsSink: BundleBridgeSink[NexysVideoDeserializerIO] = sinkScope { di.node.makeSink }
 

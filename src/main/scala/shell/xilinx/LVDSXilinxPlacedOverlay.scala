@@ -3,26 +3,28 @@ package sifive.fpgashells.shell.xilinx
 import freechips.rocketchip.diplomacy._
 import sifive.fpgashells.shell._
 
-abstract class LVDSXilinxPlacedOverlay(name: String, di: LVDSDesignInput, si: LVDSShellInput, channels: Int)
-  extends LVDSPlacedOverlay(name, di, si, channels)
+abstract class LVDSXilinxPlacedOverlay(name: String, di: LVDSDesignInput, si: LVDSShellInput)
+  extends LVDSPlacedOverlay(name, di, si)
 {
   def shell: XilinxShell
 
   shell { InModuleBody {
-    lvdsSink.bundle.i_clk_p := AnalogToUInt(io.i_clk_p).asBool.asClock
-    lvdsSink.bundle.i_clk_n := AnalogToUInt(io.i_clk_n).asBool.asClock
-    lvdsSink.bundle.i_valid_p := AnalogToUInt(io.i_valid_p)
-    lvdsSink.bundle.i_valid_n := AnalogToUInt(io.i_valid_n)
-    lvdsSink.bundle.i_frame_p := AnalogToUInt(io.i_frame_p)
-    lvdsSink.bundle.i_frame_n := AnalogToUInt(io.i_frame_n)
-    lvdsSink.bundle.i_data_p(0) := AnalogToUInt(io.i_data_p(0))
-    lvdsSink.bundle.i_data_n(0) := AnalogToUInt(io.i_data_n(0))
-    lvdsSink.bundle.i_data_p(1) := AnalogToUInt(io.i_data_p(1))
-    lvdsSink.bundle.i_data_n(1) := AnalogToUInt(io.i_data_n(1))
-    lvdsSink.bundle.i_data_p(2) := AnalogToUInt(io.i_data_p(2))
-    lvdsSink.bundle.i_data_n(2) := AnalogToUInt(io.i_data_n(2))
-    lvdsSink.bundle.i_data_p(3) := AnalogToUInt(io.i_data_p(3))
-    lvdsSink.bundle.i_data_n(3) := AnalogToUInt(io.i_data_n(3))
+    lvdsSink.bundle.lvds.zip(io.lvds).foreach{ case (bundle, io) =>
+      bundle.i_clk_p     := AnalogToUInt(io.i_clk_p).asBool.asClock
+      bundle.i_clk_n     := AnalogToUInt(io.i_clk_n).asBool.asClock
+      bundle.i_valid_p   := AnalogToUInt(io.i_valid_p)
+      bundle.i_valid_n   := AnalogToUInt(io.i_valid_n)
+      bundle.i_frame_p   := AnalogToUInt(io.i_frame_p)
+      bundle.i_frame_n   := AnalogToUInt(io.i_frame_n)
+      bundle.i_data_p(0) := AnalogToUInt(io.i_data_p(0))
+      bundle.i_data_n(0) := AnalogToUInt(io.i_data_n(0))
+      bundle.i_data_p(1) := AnalogToUInt(io.i_data_p(1))
+      bundle.i_data_n(1) := AnalogToUInt(io.i_data_n(1))
+      bundle.i_data_p(2) := AnalogToUInt(io.i_data_p(2))
+      bundle.i_data_n(2) := AnalogToUInt(io.i_data_n(2))
+      bundle.i_data_p(3) := AnalogToUInt(io.i_data_p(3))
+      bundle.i_data_n(3) := AnalogToUInt(io.i_data_n(3))
+    }
   } }
 }
 

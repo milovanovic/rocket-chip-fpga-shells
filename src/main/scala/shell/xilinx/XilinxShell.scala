@@ -18,6 +18,11 @@ class XDC(val name: String)
     if (diffTerm) addConstraint(s"set_property -dict { PACKAGE_PIN ${pin} IOSTANDARD ${standard} DIFF_TERM TRUE } ${io.sdcPin}")
     else addConstraint(s"set_property -dict { PACKAGE_PIN ${pin} IOSTANDARD ${standard} DIFF_TERM FALSE } ${io.sdcPin}")
   }
+
+  def addClockDedicatedRoute(clockPin: => String) {
+    addConstraint(s"set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets $clockPin ]")
+  }
+
   def addBoardPin(io: IOPin, pin: String) {
     addConstraint(s"set_property BOARD_PIN {${pin}} ${io.sdcPin}")
   }

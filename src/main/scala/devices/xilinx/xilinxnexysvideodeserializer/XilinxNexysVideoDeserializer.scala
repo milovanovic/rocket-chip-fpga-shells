@@ -5,10 +5,11 @@ import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.util.ResetCatchAndSync
 import org.chipsalliance.cde.config.Parameters
 import sifive.fpgashells.clocks.{PLLInClockParameters, PLLOutClockParameters, PLLParameters}
-import sifive.fpgashells.ip.xilinx.{DiffSeries7MMCM, SelectIO}
+import sifive.fpgashells.ip.xilinx.{DiffSeries7MMCM, DiffSeries7PLL, SelectIO}
 
 case class XilinxNexysVideoDeserializerParams(
   channels : Int,
+  chips    : Int,
   pll: PLLParameters = PLLParameters(
     name = "deser_pll",
     input = PLLInClockParameters(freqMHz = 300.0),
@@ -19,7 +20,7 @@ case class XilinxNexysVideoDeserializerParams(
   )
 )
 
-class NexysVideoDeserializerIO(val channels: Int) extends Bundle {
+class LVDSBundle(val channels:Int) extends Bundle {
   // LVDS clock, data, frame and valid
   val i_clk_p: Clock = Input(Clock())
   val i_clk_n: Clock = Input(Clock())
@@ -38,57 +39,60 @@ class NexysVideoDeserializerIO(val channels: Int) extends Bundle {
   // Reset
   val i_rst: Bool = Input(Bool())
 }
+class NexysVideoDeserializerIO(val channels: Int, val chips: Int = 1) extends Bundle {
+  val lvds: Vec[LVDSBundle] = Vec(chips, new LVDSBundle(channels))
+}
 
 class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implicit p: Parameters) extends LazyModule {
 
   lazy val module = new Impl
   class Impl extends LazyRawModuleImp(this) {
-    val io: NexysVideoDeserializerIO = IO(new NexysVideoDeserializerIO(c.channels))
+    val io: NexysVideoDeserializerIO = IO(new NexysVideoDeserializerIO(c.channels, c.chips))
 
     // PLL
-    val pll: DiffSeries7MMCM = Module(new DiffSeries7MMCM(c.pll))
+    val pll: Seq[DiffSeries7MMCM] = Seq.fill(c.chips){Module(new DiffSeries7MMCM(c.pll))}
 
-    pll.io.clk_in1_p := io.i_clk_p
-    pll.io.clk_in1_n := io.i_clk_n
-    pll.io.reset := io.i_rst
-    
-    childClock := pll.io.clk_out2.get
-    childReset := ResetCatchAndSync(childClock, io.i_rst && !pll.io.locked)
-    io.o_clock := childClock
-    io.o_reset := childReset
+    pll.zip(io.lvds).foreach{case (pll, io) =>
+      pll.io.clk_in1_p := io.i_clk_p
+      pll.io.clk_in1_n := io.i_clk_n
+      pll.io.reset := io.i_rst
 
-    // 7 series SelectIO
-    private val selectio_frame = Module(new SelectIO)
-    private val selectio_valid = Module(new SelectIO)
-    private val selectio_data = Seq.fill(c.channels) {
-      Module(new SelectIO)
-    }
+      io.o_clock := pll.io.clk_out2.get
+      io.o_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
 
-    // Connect modules
-    selectio_frame.io.clk_in := pll.io.clk_out1.get
-    selectio_frame.io.clk_div_in := pll.io.clk_out2.get
-    selectio_frame.io.io_reset := childReset
-    selectio_frame.io.bitslip := 0.U
-    selectio_frame.io.data_in_from_pins_p := io.i_frame_p
-    selectio_frame.io.data_in_from_pins_n := io.i_frame_n
-    io.o_frame := selectio_frame.io.data_in_to_device
+      // 7 series SelectIO
+      val selectio_frame = Module(new SelectIO)
+      val selectio_valid = Module(new SelectIO)
+      val selectio_data = Seq.fill(c.channels) {
+        Module(new SelectIO)
+      }
 
-    selectio_valid.io.clk_in := pll.io.clk_out1.get
-    selectio_valid.io.clk_div_in := pll.io.clk_out2.get
-    selectio_valid.io.io_reset := childReset
-    selectio_valid.io.bitslip := 0.U
-    selectio_valid.io.data_in_from_pins_p := io.i_valid_p
-    selectio_valid.io.data_in_from_pins_n := io.i_valid_n
-    io.o_valid := selectio_valid.io.data_in_to_device
-    
-    selectio_data.zipWithIndex.foreach { case (m, i) =>
-      m.io.clk_in := pll.io.clk_out1.get
-      m.io.clk_div_in := pll.io.clk_out2.get
-      m.io.io_reset := childReset
-      m.io.bitslip := 0.U
-      m.io.data_in_from_pins_p := io.i_data_p(i)
-      m.io.data_in_from_pins_n := io.i_data_n(i)
-      io.o_data(i) := m.io.data_in_to_device
+      // Connect modules
+      selectio_frame.io.clk_in := pll.io.clk_out1.get
+      selectio_frame.io.clk_div_in := pll.io.clk_out2.get
+      selectio_frame.io.io_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+      selectio_frame.io.bitslip := 0.U
+      selectio_frame.io.data_in_from_pins_p := io.i_frame_p
+      selectio_frame.io.data_in_from_pins_n := io.i_frame_n
+      io.o_frame := selectio_frame.io.data_in_to_device
+
+      selectio_valid.io.clk_in := pll.io.clk_out1.get
+      selectio_valid.io.clk_div_in := pll.io.clk_out2.get
+      selectio_valid.io.io_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+      selectio_valid.io.bitslip := 0.U
+      selectio_valid.io.data_in_from_pins_p := io.i_valid_p
+      selectio_valid.io.data_in_from_pins_n := io.i_valid_n
+      io.o_valid := selectio_valid.io.data_in_to_device
+
+      selectio_data.zipWithIndex.foreach { case (m, i) =>
+        m.io.clk_in := pll.io.clk_out1.get
+        m.io.clk_div_in := pll.io.clk_out2.get
+        m.io.io_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+        m.io.bitslip := 0.U
+        m.io.data_in_from_pins_p := io.i_data_p(i)
+        m.io.data_in_from_pins_n := io.i_data_n(i)
+        io.o_data(i) := m.io.data_in_to_device
+      }
     }
   }
 }
