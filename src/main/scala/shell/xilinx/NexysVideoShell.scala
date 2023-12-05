@@ -236,7 +236,7 @@ class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name:
       Seq(
         ("B17", IOPin(io.lvds.head.i_clk_p)),     // Sch=IO_L11P_T1_SRCC_16
         ("B18", IOPin(io.lvds.head.i_clk_n)),     // Sch=IO_L11N_T1_SRCC_16
-        ("F18", IOPin(io.lvds.head.i_valid_p)),   // Sch=IO_L15N_T2_DQS_16
+        ("F18", IOPin(io.lvds.head.i_valid_p)),   // Sch=IO_L15P_T2_DQS_16
         ("E18", IOPin(io.lvds.head.i_valid_n)),   // Sch=IO_L15N_T2_DQS_16
         ("F16", IOPin(io.lvds.head.i_frame_p)),   // Sch=IO_L2P_T0_16
         ("E17", IOPin(io.lvds.head.i_frame_n)),   // Sch=IO_L2N_T0_16
