@@ -58,7 +58,7 @@ class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implic
       pll.io.reset := io.i_rst
 
       io.o_clock := pll.io.clk_out2.get
-      io.o_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+      io.o_reset := io.i_rst // ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
 
       // 7 series SelectIO
       val selectio_frame = Module(new SelectIO)
@@ -70,7 +70,7 @@ class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implic
       // Connect modules
       selectio_frame.io.clk_in := pll.io.clk_out1.get
       selectio_frame.io.clk_div_in := pll.io.clk_out2.get
-      selectio_frame.io.io_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+      selectio_frame.io.io_reset := io.i_rst // ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
       selectio_frame.io.bitslip := 0.U
       selectio_frame.io.data_in_from_pins_p := io.i_frame_p
       selectio_frame.io.data_in_from_pins_n := io.i_frame_n
@@ -78,7 +78,7 @@ class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implic
 
       selectio_valid.io.clk_in := pll.io.clk_out1.get
       selectio_valid.io.clk_div_in := pll.io.clk_out2.get
-      selectio_valid.io.io_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+      selectio_valid.io.io_reset := io.i_rst // ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
       selectio_valid.io.bitslip := 0.U
       selectio_valid.io.data_in_from_pins_p := io.i_valid_p
       selectio_valid.io.data_in_from_pins_n := io.i_valid_n
@@ -87,7 +87,7 @@ class XilinxNexysVideoDeserializer(c: XilinxNexysVideoDeserializerParams)(implic
       selectio_data.zipWithIndex.foreach { case (m, i) =>
         m.io.clk_in := pll.io.clk_out1.get
         m.io.clk_div_in := pll.io.clk_out2.get
-        m.io.io_reset := ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
+        m.io.io_reset := io.i_rst // ResetCatchAndSync(pll.io.clk_out2.get, io.i_rst && !pll.io.locked)
         m.io.bitslip := 0.U
         m.io.data_in_from_pins_p := io.i_data_p(i)
         m.io.data_in_from_pins_n := io.i_data_n(i)
