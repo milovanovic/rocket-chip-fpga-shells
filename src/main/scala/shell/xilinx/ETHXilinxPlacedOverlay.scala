@@ -20,7 +20,6 @@ abstract class ETHXilinxPlacedOverlay(name: String, di: ETHDesignInput, si: ETHS
       ethSink.bundle.rgmii_rx_ctl := AnalogToUInt(io.rgmii_rx_ctl)
       ethSink.bundle.rgmii_rxd := Cat(AnalogToUInt(io.rgmii_rxd(3)), AnalogToUInt(io.rgmii_rxd(2)), AnalogToUInt(io.rgmii_rxd(1)), AnalogToUInt(io.rgmii_rxd(0)))
       ethSink.bundle.rgmii_rxc := AnalogToUInt(io.rgmii_rxc)
-//      ethSink.bundle.mdio := io.mdio
     }
   }
 }
