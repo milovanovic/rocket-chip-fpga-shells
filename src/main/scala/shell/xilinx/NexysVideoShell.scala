@@ -8,6 +8,7 @@ import sifive.fpgashells.clocks._
 import sifive.fpgashells.devices.xilinx.xilinxnexysvideomig._
 import devices.xilinx.xilinxnexysvideodeserializer._
 import dspblocks.testchain.DSPChainKey
+import dspblocks.toplevel.TopLevelKey
 import sifive.fpgashells.ip.xilinx._
 import sifive.fpgashells.shell._
 
@@ -209,7 +210,7 @@ class UARTNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val she
 class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: LVDSDesignInput, val shellInput: LVDSShellInput)
   extends LVDSXilinxPlacedOverlay(name, designInput, shellInput)
 {
-  val deser: XilinxNexysVideoDeserializer = LazyModule(new XilinxNexysVideoDeserializer(XilinxNexysVideoDeserializerParams(channels=4, chips = 2)))
+  val deser: XilinxNexysVideoDeserializer = LazyModule(new XilinxNexysVideoDeserializer(XilinxNexysVideoDeserializerParams(si.channels, si.chips)))
 
   shell { InModuleBody {
     val packagePinsWithPackageIOs =  if (si.chips == 1) {
@@ -221,14 +222,14 @@ class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name:
         ("L13", IOPin(io.lvds.head.i_valid_n)),   // Sch=FMC_LA07_N
         ("A18", IOPin(io.lvds.head.i_frame_p)),   // Sch=FMC_LA19_P
         ("A19", IOPin(io.lvds.head.i_frame_n)),   // Sch=FMC_LA19_N
-        ("L16", IOPin(io.lvds.head.i_data_p(0))), // Sch=FMC_LA15_P
-        ("K16", IOPin(io.lvds.head.i_data_n(0))), // Sch=FMC_LA15_N
-        ("G17", IOPin(io.lvds.head.i_data_p(1))), // Sch=FMC_LA16_P
-        ("G18", IOPin(io.lvds.head.i_data_n(1))), // Sch=FMC_LA16_N
-        ("L14", IOPin(io.lvds.head.i_data_p(2))), // Sch=FMC_LA11_P
-        ("L15", IOPin(io.lvds.head.i_data_n(2))), // Sch=FMC_LA11_N
-        ("L19", IOPin(io.lvds.head.i_data_p(3))), // Sch=FMC_LA12_P
-        ("L20", IOPin(io.lvds.head.i_data_n(3)))  // Sch=FMC_LA12_N
+        ("L16", IOPin(io.lvds.head.i_data_p(3))), // Sch=FMC_LA15_P
+        ("K16", IOPin(io.lvds.head.i_data_n(3))), // Sch=FMC_LA15_N
+        ("G17", IOPin(io.lvds.head.i_data_p(2))), // Sch=FMC_LA16_P
+        ("G18", IOPin(io.lvds.head.i_data_n(2))), // Sch=FMC_LA16_N
+        ("L14", IOPin(io.lvds.head.i_data_p(1))), // Sch=FMC_LA11_P
+        ("L15", IOPin(io.lvds.head.i_data_n(1))), // Sch=FMC_LA11_N
+        ("L19", IOPin(io.lvds.head.i_data_p(0))), // Sch=FMC_LA12_P
+        ("L20", IOPin(io.lvds.head.i_data_n(0)))  // Sch=FMC_LA12_N
       )
     }
     else {
@@ -269,7 +270,7 @@ class LVDSNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name:
     packagePinsWithPackageIOs foreach { case (pin, io) =>
       shell.xdc.addDiffIOStandard(io, pin, standard = "LVDS_25", diffTerm = true)
     }
-    if (si.chips == 1) shell.sdc.addGroup(customPins = Seq("deser_pll/clk_out1", "deser_pll/clk_out2"))
+    if (si.chips == 1) shell.sdc.addGroup(customPins = Seq("deser_pll_0/clk_out1", "deser_pll_0/clk_out2"))
     else {
       shell.sdc.addGroup(customPins = Seq("deser_pll_0/clk_out1", "deser_pll_0/clk_out2"))
       shell.sdc.addGroup(customPins = Seq("deser_pll_1/clk_out1", "deser_pll_1/clk_out2"))
@@ -314,11 +315,125 @@ class ETHNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: 
     // Ethernet reset is on bank 34 which has VCC=3.3V
     shell.xdc.addPackagePin(IOPin(io.phy_resetn), "U7")
     shell.xdc.addIOStandard(IOPin(io.phy_resetn), standard = "LVCMOS33")
+
+
   } }
 }
 class ETHNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: ETHShellInput)(implicit val valName: ValName)
   extends ETHShellPlacer[NexysVideoShellBasicOverlays] {
   def place(designInput: ETHDesignInput) = new ETHNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
+}
+
+// Ethernet
+class TopLevelNexysVideoPlacedOverlay(val shell: NexysVideoShellBasicOverlays, name: String, val designInput: TopLevelDesignInput, val shellInput: TopLevelShellInput)
+  extends TopLevelXilinxPlacedOverlay(name, designInput, shellInput)
+{
+  shell { InModuleBody {
+    val packagePinsWithPackageIOs = Seq(
+      ("AA16", IOPin(io.mdc)),          // Sch=ETH_MDC
+      ("Y16",  IOPin(io.mdio)),         // Sch=ETH_MDIO
+      ("AB16", IOPin(io.rgmii_rxd(0))), // Sch=ETH_RXD0
+      ("AA15", IOPin(io.rgmii_rxd(1))), // Sch=ETH_RXD1
+      ("AB15", IOPin(io.rgmii_rxd(2))), // Sch=ETH_RXD2
+      ("AB11", IOPin(io.rgmii_rxd(3))), // Sch=ETH_RXD3
+      ("Y12",  IOPin(io.rgmii_txd(0))), // Sch=ETH_TXD0
+      ("W12",  IOPin(io.rgmii_txd(1))), // Sch=ETH_TXD1
+      ("W11",  IOPin(io.rgmii_txd(2))), // Sch=ETH_TXD2
+      ("Y11",  IOPin(io.rgmii_txd(3))), // Sch=ETH_TXD3
+      ("AA14", IOPin(io.rgmii_txc)),    // Sch=ETH_TXCK
+      ("V10",  IOPin(io.rgmii_tx_ctl)), // Sch=ETH_TXCTL
+      ("V13",  IOPin(io.rgmii_rxc)),    // Sch=ETH_RXCK
+      ("W10",  IOPin(io.rgmii_rx_ctl))  // Sch=ETH_RXCTL
+    )
+    packagePinsWithPackageIOs foreach { case (pin, io) =>
+      shell.xdc.addPackagePin(io, pin)
+      shell.xdc.addIOStandard(io, standard = "LVCMOS25")
+    }
+    // Ethernet clock
+    shell.sdc.addClock("rgmii_rxc", IOPin(io.rgmii_rxc), 125)
+    shell.sdc.addGroup(clocks = Seq("rgmii_rxc"))
+    // Ethernet reset is on bank 34 which has VCC=3.3V
+    shell.xdc.addPackagePin(IOPin(io.phy_resetn), "U7")
+    shell.xdc.addIOStandard(IOPin(io.phy_resetn), standard = "LVCMOS33")
+
+    val lvdsIOs = Seq(
+        ("B18", IOPin(io.io_2_lvds_clk_n)), // Sch=IO_L11P_T1_SRCC_16
+        ("B17", IOPin(io.io_2_lvds_clk_p)), // Sch=IO_L11N_T1_SRCC_16
+        ("E18", IOPin(io.io_2_lvds_valid_n)), // Sch=IO_L15P_T2_DQS_16
+        ("F18", IOPin(io.io_2_lvds_valid_p)), // Sch=IO_L15N_T2_DQS_16
+        ("E17", IOPin(io.io_2_lvds_frame_clk_n)), // Sch=IO_L2P_T0_16
+        ("F16", IOPin(io.io_2_lvds_frame_clk_p)), // Sch=IO_L2N_T0_16
+        ("F20", IOPin(io.io_2_lvds_data_n(0))), // Sch=IO_L18P_T2_16
+        ("F19", IOPin(io.io_2_lvds_data_p(0))), // Sch=IO_L18N_T2_16
+        ("A19", IOPin(io.io_2_lvds_data_n(1))), // Sch=IO_L17P_T2_16
+        ("A18", IOPin(io.io_2_lvds_data_p(1))), // Sch=IO_L17N_T2_16
+        ("C17", IOPin(io.io_2_lvds_data_n(2))), // Sch=IO_L12P_T1_MRCC_16
+        ("D17", IOPin(io.io_2_lvds_data_p(2))), // Sch=IO_L12N_T1_MRCC_16
+        ("D21", IOPin(io.io_2_lvds_data_n(3))), // Sch=IO_L23P_T3_16
+        ("E21", IOPin(io.io_2_lvds_data_p(3))), // Sch=IO_L23N_T3_16
+
+        ("J17", IOPin(io.io_3_lvds_clk_n)), // Sch=IO_L11P_T1_SRCC_16
+        ("K17", IOPin(io.io_3_lvds_clk_p)), // Sch=IO_L21P_T3_DQS_15
+        ("L13", IOPin(io.io_3_lvds_valid_n)), // Sch=IO_L20P_T3_A20_15
+        ("M13", IOPin(io.io_3_lvds_valid_p)), // Sch=IO_L20N_T3_A19_15
+        ("L18", IOPin(io.io_3_lvds_frame_clk_n)), // Sch=IO_L16P_T2_A28_15
+        ("M18", IOPin(io.io_3_lvds_frame_clk_p)), // Sch=IO_L16N_T2_A27_15
+        ("J21", IOPin(io.io_3_lvds_data_n(0))), // Sch=IO_L11P_T1_SRCC_15
+        ("J20", IOPin(io.io_3_lvds_data_p(0))), // Sch=IO_L11N_T1_SRCC_15
+        ("M22", IOPin(io.io_3_lvds_data_n(1))), // Sch=IO_L15P_T2_DQS_15
+        ("N22", IOPin(io.io_3_lvds_data_p(1))), // Sch=IO_L15N_T2_DQS_ADV_B_15
+        ("G20", IOPin(io.io_3_lvds_data_n(2))), // Sch=IO_L8P_T1_AD10P_15
+        ("H20", IOPin(io.io_3_lvds_data_p(2))), // Sch=IO_L8N_T1_AD10N_15
+        ("L20", IOPin(io.io_3_lvds_data_n(3))), // Sch=IO_L14P_T2_SRCC_15
+        ("L19", IOPin(io.io_3_lvds_data_p(3))) // Sch=IO_L14N_T2_SRCC_15
+      )
+    lvdsIOs foreach { case (pin, io) =>
+      shell.xdc.addDiffIOStandard(io, pin, standard = "LVDS_25", diffTerm = true)
+    }
+
+    val ctrl1IOs = Seq(
+      ("B15", IOPin(io.awr_host_intr1_fmc)),
+      ("N20", IOPin(io.awr_host_intr2_fmc)),
+      ("N19", IOPin(io.awr_host_intr3_fmc)),
+      ("N18", IOPin(io.awr_host_intr4_fmc)),
+      ("D19", IOPin(io.awr_spi_cs1_fmc)),
+      ("E19", IOPin(io.awr_spi_cs2_fmc)),
+      ("M21", IOPin(io.awr_spi_cs3_fmc)),
+      ("B16", IOPin(io.awr_spi_cs4_fmc)),
+      ("K21", IOPin(io.awr_spi_miso_fmc)),
+      ("M20", IOPin(io.awr_spi_mosi_fmc)),
+      ("K22", IOPin(io.awr_spi_clk_fmc)),
+      ("L21", IOPin(io.awr_nrst2_fmc))
+    )
+    val ctrl2IOs = Seq(
+      ("V9", IOPin(io.awr_host_intr1)),
+      ("V7", IOPin(io.awr_host_intr2)),
+      ("W9", IOPin(io.awr_host_intr3)),
+      ("Y8", IOPin(io.awr_host_intr4)),
+      ("AB22", IOPin(io.awr_spi_cs1)),
+      ("AB21", IOPin(io.awr_spi_cs2)),
+      ("Y21", IOPin(io.awr_spi_cs3)),
+      ("AA21", IOPin(io.awr_spi_cs4)),
+      ("AB20", IOPin(io.awr_spi_miso)),
+      ("AA20", IOPin(io.awr_spi_mosi)),
+      ("AB18", IOPin(io.awr_spi_clk)),
+      ("Y6",  IOPin(io.awr_nrst1)),
+      ("AA8", IOPin(io.awr_nrst2)),
+      ("R6", IOPin(io.awr_nrst1_pmod))
+    )
+    ctrl1IOs foreach { case (pin, io) =>
+      shell.xdc.addPackagePin(io, pin)
+      shell.xdc.addIOStandard(io, standard = "LVCMOS25")
+    }
+    ctrl2IOs foreach { case (pin, io) =>
+      shell.xdc.addPackagePin(io, pin)
+      shell.xdc.addIOStandard(io, standard = "LVCMOS33")
+    }
+  } }
+}
+class TopLevelNexysVideoShellPlacer(val shell: NexysVideoShellBasicOverlays, val shellInput: TopLevelShellInput)(implicit val valName: ValName)
+  extends TopLevelShellPlacer[NexysVideoShellBasicOverlays] {
+  def place(designInput: TopLevelDesignInput) = new TopLevelNexysVideoPlacedOverlay(shell, valName.name, designInput, shellInput)
 }
 
 // 8 LEDs
@@ -455,6 +570,7 @@ abstract class NexysVideoShellBasicOverlays()(implicit p: Parameters) extends Se
   val uart      = Overlay(UARTOverlayKey, new UARTNexysVideoShellPlacer(this, UARTShellInput()))
   val lvds      = if (p(DSPChainKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput(p(DSPChainKey).get.dataChannels, p(DSPChainKey).get.dataChips)))) else None
   val eth       = if (p(DSPChainKey).isDefined) Some(Overlay(ETHOverlayKey, new ETHNexysVideoShellPlacer(this, ETHShellInput()))) else None
+  val top = if (p(TopLevelKey).isDefined) Some(Overlay(TopLevelOverlayKey, new TopLevelNexysVideoShellPlacer(this, TopLevelShellInput()))) else None
   val sdio      = Overlay(SPIOverlayKey, new SDIONexysVideoShellPlacer(this, SPIShellInput()))
   val jtag      = Overlay(JTAGDebugOverlayKey, new JTAGDebugNexysVideoShellPlacer(this, JTAGDebugShellInput()))
   val cjtag     = Overlay(cJTAGDebugOverlayKey, new cJTAGDebugNexysVideoShellPlacer(this, cJTAGDebugShellInput()))
