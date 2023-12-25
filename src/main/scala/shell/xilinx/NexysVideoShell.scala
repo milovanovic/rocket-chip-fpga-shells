@@ -570,7 +570,7 @@ abstract class NexysVideoShellBasicOverlays()(implicit p: Parameters) extends Se
   val uart      = Overlay(UARTOverlayKey, new UARTNexysVideoShellPlacer(this, UARTShellInput()))
   val lvds      = if (p(DSPChainKey).isDefined) Some(Overlay(LVDSOverlayKey, new LVDSNexysVideoShellPlacer(this, LVDSShellInput(p(DSPChainKey).get.dataChannels, p(DSPChainKey).get.dataChips)))) else None
   val eth       = if (p(DSPChainKey).isDefined) Some(Overlay(ETHOverlayKey, new ETHNexysVideoShellPlacer(this, ETHShellInput()))) else None
-  val top = if (p(TopLevelKey).isDefined) Some(Overlay(TopLevelOverlayKey, new TopLevelNexysVideoShellPlacer(this, TopLevelShellInput()))) else None
+  val top       = if (p(TopLevelKey).isDefined) Some(Overlay(TopLevelOverlayKey, new TopLevelNexysVideoShellPlacer(this, TopLevelShellInput()))) else None
   val sdio      = Overlay(SPIOverlayKey, new SDIONexysVideoShellPlacer(this, SPIShellInput()))
   val jtag      = Overlay(JTAGDebugOverlayKey, new JTAGDebugNexysVideoShellPlacer(this, JTAGDebugShellInput()))
   val cjtag     = Overlay(cJTAGDebugOverlayKey, new cJTAGDebugNexysVideoShellPlacer(this, cJTAGDebugShellInput()))
