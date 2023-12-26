@@ -593,6 +593,32 @@ class DiffSeries7PLL(c : PLLParameters) extends BlackBox with PLLInstance {
        |${checks}""".stripMargin)
 }
 
+class RESETSYS extends BlackBox {
+  val io = IO(new Bundle {
+    val slowest_sync_clk     = Input(Clock())
+    val ext_reset_in         = Input(Bool())
+    val aux_reset_in         = Input(Bool())
+    val mb_debug_sys_rst     = Input(Bool())
+    val dcm_locked           = Input(Bool())
+    val mb_reset             = Output(Bool())
+    val bus_struct_reset     = Output(Bool())
+    val peripheral_reset     = Output(Bool())
+    val interconnect_aresetn = Output(Bool())
+    val peripheral_aresetn   = Output(Bool())
+  })
+  ElaborationArtefacts.add(
+    "resetsys.vivado.tcl",
+    """create_ip -vendor xilinx.com -library ip -name proc_sys_reset -module_name RESETSYS -dir $ipdir -force
+    set_property -dict [list \
+            CONFIG.C_EXT_RESET_HIGH {true} \
+            CONFIG.C_AUX_RESET_HIGH {true} \
+            CONFIG.C_NUM_BUS_RST {1} \
+            CONFIG.C_NUM_PERP_RST {1} \
+            CONFIG.C_NUM_INTERCONNECT_ARESETN {1} \
+            CONFIG.C_NUM_PERP_ARESETN {1} \
+            ] [get_ips RESETSYS] """
+  )
+}
 /*
    Copyright 2016 SiFive, Inc.
 
