@@ -14,10 +14,10 @@ trait TopLevelShellPlacer[Shell] extends ShellPlacer[TopLevelDesignInput, TopLev
 class ShellTopLevelPortIO extends Bundle {
   // Ethernet
   val phy_resetn = Output(Bool())
-  val rgmii_txd = Output(UInt(4.W))
+  val rgmii_txd = Output(Vec(4,Bool()))
   val rgmii_tx_ctl = Output(Bool())
   val rgmii_txc = Output(Bool())
-  val rgmii_rxd = Input(UInt(4.W))
+  val rgmii_rxd = Input(Vec(4,Bool()))
   val rgmii_rx_ctl = Input(Bool())
   val rgmii_rxc = Input(Bool())
   val mdio = Analog(1.W)
@@ -25,8 +25,8 @@ class ShellTopLevelPortIO extends Bundle {
   // LVDS 1
   val io_2_lvds_clk_n = Input(Bool())
   val io_2_lvds_clk_p = Input(Bool())
-  val io_2_lvds_data_p = Input(UInt(4.W))
-  val io_2_lvds_data_n = Input(UInt(4.W))
+  val io_2_lvds_data_p = Input(Vec(4,Bool()))
+  val io_2_lvds_data_n = Input(Vec(4,Bool()))
   val io_2_lvds_valid_n = Input(Bool())
   val io_2_lvds_valid_p = Input(Bool())
   val io_2_lvds_frame_clk_n = Input(Bool())
@@ -34,8 +34,8 @@ class ShellTopLevelPortIO extends Bundle {
   // LVDS 2
   val io_3_lvds_clk_n = Input(Bool())
   val io_3_lvds_clk_p = Input(Bool())
-  val io_3_lvds_data_p = Input(UInt(4.W))
-  val io_3_lvds_data_n = Input(UInt(4.W))
+  val io_3_lvds_data_p = Input(Vec(4,Bool()))
+  val io_3_lvds_data_n = Input(Vec(4,Bool()))
   val io_3_lvds_valid_n = Input(Bool())
   val io_3_lvds_valid_p = Input(Bool())
   val io_3_lvds_frame_clk_n = Input(Bool())
