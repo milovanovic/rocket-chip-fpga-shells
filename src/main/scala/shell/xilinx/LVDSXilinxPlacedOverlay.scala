@@ -10,20 +10,20 @@ abstract class LVDSXilinxPlacedOverlay(name: String, di: LVDSDesignInput, si: LV
 
   shell { InModuleBody {
     lvdsSink.bundle.lvds.zip(io.lvds).foreach{ case (bundle, io) =>
-      bundle.i_clk_p     := AnalogToUInt(io.i_clk_p).asBool.asClock
-      bundle.i_clk_n     := AnalogToUInt(io.i_clk_n).asBool.asClock
-      bundle.i_valid_p   := AnalogToUInt(io.i_valid_p)
-      bundle.i_valid_n   := AnalogToUInt(io.i_valid_n)
-      bundle.i_frame_p   := AnalogToUInt(io.i_frame_p)
-      bundle.i_frame_n   := AnalogToUInt(io.i_frame_n)
-      bundle.i_data_p(0) := AnalogToUInt(io.i_data_p(0))
-      bundle.i_data_n(0) := AnalogToUInt(io.i_data_n(0))
-      bundle.i_data_p(1) := AnalogToUInt(io.i_data_p(1))
-      bundle.i_data_n(1) := AnalogToUInt(io.i_data_n(1))
-      bundle.i_data_p(2) := AnalogToUInt(io.i_data_p(2))
-      bundle.i_data_n(2) := AnalogToUInt(io.i_data_n(2))
-      bundle.i_data_p(3) := AnalogToUInt(io.i_data_p(3))
-      bundle.i_data_n(3) := AnalogToUInt(io.i_data_n(3))
+      bundle.i_clk_p     := io.i_clk_p
+      bundle.i_clk_n     := io.i_clk_n
+      bundle.i_valid_p   := io.i_valid_p
+      bundle.i_valid_n   := io.i_valid_n
+      bundle.i_frame_p   := io.i_frame_p
+      bundle.i_frame_n   := io.i_frame_n
+      bundle.i_data_p(0) := io.i_data_p(0)
+      bundle.i_data_n(0) := io.i_data_n(0)
+      bundle.i_data_p(1) := io.i_data_p(1)
+      bundle.i_data_n(1) := io.i_data_n(1)
+      bundle.i_data_p(2) := io.i_data_p(2)
+      bundle.i_data_n(2) := io.i_data_n(2)
+      bundle.i_data_p(3) := io.i_data_p(3)
+      bundle.i_data_n(3) := io.i_data_n(3)
     }
   } }
 }

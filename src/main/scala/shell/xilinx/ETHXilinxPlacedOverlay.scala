@@ -1,6 +1,7 @@
 package sifive.fpgashells.shell.xilinx
 
 import chisel3._
+import chisel3.experimental.attach
 import chisel3.util.Cat
 import freechips.rocketchip.diplomacy._
 import sifive.fpgashells.shell._
@@ -9,19 +10,7 @@ abstract class ETHXilinxPlacedOverlay(name: String, di: ETHDesignInput, si: ETHS
   extends ETHPlacedOverlay(name, di, si)
 {
   def shell: XilinxShell
-
-  shell {
-    InModuleBody {
-      UIntToAnalog(ethSink.bundle.rgmii_tx_ctl, io.rgmii_tx_ctl, true.B)
-      UIntToAnalog(ethSink.bundle.phy_resetn, io.phy_resetn, true.B)
-      io.rgmii_txd.zipWithIndex.foreach{case (m, i) => UIntToAnalog(ethSink.bundle.rgmii_txd(i,i), m, true.B)}
-      UIntToAnalog(ethSink.bundle.rgmii_txc, io.rgmii_txc, true.B)
-      UIntToAnalog(ethSink.bundle.mdc, io.mdc, true.B)
-      ethSink.bundle.rgmii_rx_ctl := AnalogToUInt(io.rgmii_rx_ctl)
-      ethSink.bundle.rgmii_rxd := Cat(AnalogToUInt(io.rgmii_rxd(3)), AnalogToUInt(io.rgmii_rxd(2)), AnalogToUInt(io.rgmii_rxd(1)), AnalogToUInt(io.rgmii_rxd(0)))
-      ethSink.bundle.rgmii_rxc := AnalogToUInt(io.rgmii_rxc)
-    }
-  }
+  shell { }
 }
 
 /*

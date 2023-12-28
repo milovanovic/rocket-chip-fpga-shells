@@ -6,33 +6,21 @@ import freechips.rocketchip.diplomacy._
 import org.chipsalliance.cde.config._
 
 case class ETHShellInput(index: Int = 0)
-case class ETHDesignInput(node: BundleBridgeSource[NexysVideoETHIO])(implicit val p: Parameters)
+case class ETHDesignInput()(implicit val p: Parameters)
 case class ETHOverlayOutput()
 case object ETHOverlayKey extends Field[Seq[DesignPlacer[ETHDesignInput, ETHShellInput, ETHOverlayOutput]]](Nil)
 trait ETHShellPlacer[Shell] extends ShellPlacer[ETHDesignInput, ETHShellInput, ETHOverlayOutput]
 
-class NexysVideoETHIO extends Bundle {
-  val phy_resetn  : Bool = Output(Bool())
-  val rgmii_txd   : UInt = Output(UInt(4.W))
-  val rgmii_tx_ctl: Bool = Output(Bool())
-  val rgmii_txc   : Bool = Output(Bool())
-  val rgmii_rxd   : UInt = Input(UInt(4.W))
-  val rgmii_rx_ctl: Bool = Input(Bool())
-  val rgmii_rxc   : Bool = Input(Bool())
-  val mdc         : Bool = Output(Bool())
-//  val mdio        : Analog = Analog(1.W)
-}
-
 class ShellETHPortIO extends Bundle {
-  val phy_resetn  : Analog = Analog(1.W)
-  val rgmii_txd   : Vec[Analog] = Vec(4, Analog(1.W))
-  val rgmii_tx_ctl: Analog = Analog(1.W)
-  val rgmii_txc   : Analog = Analog(1.W)
-  val rgmii_rxd   : Vec[Analog] = Vec(4, Analog(1.W))
-  val rgmii_rx_ctl: Analog = Analog(1.W)
-  val rgmii_rxc   : Analog = Analog(1.W)
-  val mdc         : Analog = Analog(1.W)
-  val mdio        : Analog = Analog(1.W)
+  val phy_resetn  : Bool      = Output(Bool())
+  val rgmii_txd   : Vec[Bool] = Output(Vec(4, Bool()))
+  val rgmii_tx_ctl: Bool      = Output(Bool())
+  val rgmii_txc   : Bool      = Output(Bool())
+  val rgmii_rxd   : Vec[Bool] = Input(Vec(4, Bool()))
+  val rgmii_rx_ctl: Bool      = Input(Bool())
+  val rgmii_rxc   : Bool      = Input(Bool())
+  val mdc         : Bool      = Output(Bool())
+  val mdio        : Analog    = Analog(1.W)
 }
 
 abstract class ETHPlacedOverlay(val name: String, val di: ETHDesignInput, val si: ETHShellInput)
@@ -41,8 +29,6 @@ abstract class ETHPlacedOverlay(val name: String, val di: ETHDesignInput, val si
   implicit val p: Parameters = di.p
 
   def ioFactory = new ShellETHPortIO
-
-  val ethSink: BundleBridgeSink[NexysVideoETHIO] = sinkScope { di.node.makeSink }
 
   def overlayOutput: ETHOverlayOutput = ETHOverlayOutput()
 }

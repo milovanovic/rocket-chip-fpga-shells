@@ -39,7 +39,7 @@ class LVDSBundle(val channels:Int) extends Bundle {
   // Reset
   val i_rst: Bool = Input(Bool())
 }
-class NexysVideoDeserializerIO(val channels: Int, val chips: Int = 1) extends Bundle {
+class NexysVideoDeserializerIO(val channels: Int, val chips: Int) extends Bundle {
   val lvds: Vec[LVDSBundle] = Vec(chips, new LVDSBundle(channels))
 }
 

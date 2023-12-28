@@ -15,14 +15,14 @@ trait LVDSShellPlacer[Shell] extends ShellPlacer[LVDSDesignInput, LVDSShellInput
 
 class LVDSPortBundle(val channels: Int) extends Bundle {
   // LVDS clock, data, frame and valid
-  val i_clk_p: Analog = Analog(1.W)
-  val i_clk_n: Analog = Analog(1.W)
-  val i_data_p: Vec[Analog] = Vec(channels, Analog(1.W))
-  val i_data_n: Vec[Analog] = Vec(channels, Analog(1.W))
-  val i_valid_p: Analog = Analog(1.W)
-  val i_valid_n: Analog = Analog(1.W)
-  val i_frame_p: Analog = Analog(1.W)
-  val i_frame_n: Analog = Analog(1.W)
+  val i_clk_p: Clock = Input(Clock())
+  val i_clk_n: Clock = Input(Clock())
+  val i_data_p: Vec[Bool] = Input(Vec(channels, Bool()))
+  val i_data_n: Vec[Bool] = Input(Vec(channels, Bool()))
+  val i_valid_p: Bool = Input(Bool())
+  val i_valid_n: Bool = Input(Bool())
+  val i_frame_p: Bool = Input(Bool())
+  val i_frame_n: Bool = Input(Bool())
 }
 
 class ShellLVDSPortIO(val channels: Int, val chips: Int = 1) extends Bundle {
