@@ -373,8 +373,8 @@ class SelectIO extends BlackBox {
     val clk_div_in = Input(Clock())
     val io_reset   = Input(Bool())
     val bitslip    = Input(UInt(1.W))
-    val data_in_from_pins_p = Input(UInt(1.W))
-    val data_in_from_pins_n = Input(UInt(1.W))
+    val data_in_from_pins_p = Input(Bool())
+    val data_in_from_pins_n = Input(Bool())
     val data_in_to_device   = Output(UInt(8.W))
   })
 
