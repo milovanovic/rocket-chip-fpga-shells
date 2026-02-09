@@ -7,7 +7,7 @@ import org.chipsalliance.cde.config._
 
 // Black Box
 class Genesys2MIGIODDR(depth: BigInt) extends Bundle {
-  require((depth<=0x20000000L),"Genesys2MIGIODDR supports upto 512 MB depth configuraton")
+  require(depth<=0x20000000L, "Genesys2MIGIODDR supports upto 512 MB depth configuraton")
   val ddr3_addr    = Output(Bits(15.W))
   val ddr3_ba      = Output(Bits(3.W))
   val ddr3_ras_n   = Output(Bool())
