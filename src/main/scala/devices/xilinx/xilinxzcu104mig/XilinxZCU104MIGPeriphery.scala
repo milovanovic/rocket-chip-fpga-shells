@@ -1,10 +1,10 @@
 package sifive.fpgashells.devices.xilinx.xilinxzcu104mig
 
-import chisel3._
-import org.chipsalliance.cde.config._
+import freechips.rocketchip.diplomacy.AddressRange
 import freechips.rocketchip.subsystem.{BaseSubsystem, MBUS}
-import freechips.rocketchip.diplomacy.{LazyModule, LazyModuleImp, AddressRange}
-import freechips.rocketchip.tilelink.{TLWidthWidget}
+import freechips.rocketchip.tilelink.TLWidthWidget
+import org.chipsalliance.cde.config._
+import org.chipsalliance.diplomacy.lazymodule.{LazyModule, LazyModuleImp}
 case object MemoryXilinxDDRKey extends Field[XilinxZCU104MIGParams]
 
 trait HasMemoryXilinxZCU104MIG { this: BaseSubsystem =>
@@ -33,19 +33,3 @@ trait HasMemoryXilinxZCU104MIGModuleImp extends LazyModuleImp
 
   xilinxzcu104mig <> outer.xilinxzcu104mig.module.io.port
 }
-
-/*
-   Copyright 2016 SiFive, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/

@@ -3,11 +3,13 @@ package sifive.fpgashells.devices.xilinx.xilinxzcu104mig
 import chisel3._
 import chisel3.experimental.attach
 import freechips.rocketchip.amba.axi4._
-import org.chipsalliance.cde.config.Parameters
-import freechips.rocketchip.subsystem._
-import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.diplomacy.{AddressRange, AddressSet, RegionType, TransferSizes}
 import freechips.rocketchip.prci._
+import freechips.rocketchip.resources.MemoryDevice
+import freechips.rocketchip.subsystem._
 import freechips.rocketchip.tilelink._
+import org.chipsalliance.cde.config.Parameters
+import org.chipsalliance.diplomacy.lazymodule.{LazyModule, LazyModuleImp}
 import sifive.fpgashells.ip.xilinx.zcu104mig.{ZCU104MIGIOClocksReset, ZCU104MIGIODDR, zcu104mig}
 
 case class XilinxZCU104MIGParams(
@@ -49,7 +51,7 @@ class XilinxZCU104MIGIsland(c: XilinxZCU104MIGParams)(implicit p: Parameters) ex
 
     //MIG black box instantiation
     val blackbox = Module(new zcu104mig(depth))
-    val (axi_async, _) = node.in(0)
+    val (axi_async, _) = node.in.head
 
     //pins to top level
     attach(io.port.c0_ddr4_dq, blackbox.io.c0_ddr4_dq)
@@ -160,19 +162,3 @@ class XilinxZCU104MIG(c: XilinxZCU104MIGParams)(implicit p: Parameters) extends 
     island.module.reset := io.port.c0_ddr4_ui_clk_sync_rst
   }
 }
-
-/*
-   Copyright 2016 SiFive, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/

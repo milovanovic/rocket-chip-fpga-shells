@@ -3,14 +3,10 @@ package sifive.fpgashells.ip.xilinx.zcu104mig
 import chisel3._
 import chisel3.experimental.Analog
 import freechips.rocketchip.util.ElaborationArtefacts
-
 import org.chipsalliance.cde.config._
 
-// IP VLNV: xilinx.com:customize_ip:zcu104mig:1.0
-// Black Box
-
 class ZCU104MIGIODDR(depth: BigInt) extends Bundle {
-  require((depth<=0x80000000L), "ZCU104MIGIODDR supports upto 2GB depth configuration.")
+  require(depth<=0x80000000L, "ZCU104MIGIODDR supports upto 2GB depth configuration.")
   val c0_ddr4_adr           = Output(Bits(17.W))
   val c0_ddr4_bg            = Output(Bits(2.W))
   val c0_ddr4_ba            = Output(Bits(2.W))
@@ -30,7 +26,7 @@ class ZCU104MIGIODDR(depth: BigInt) extends Bundle {
 
 //reused directly in io bundle for sifive.blocks.devices.xilinxzcu104mig
 trait ZCU104MIGIOClocksReset extends Bundle {
-  //inputs2
+  //inputs
   //"NO_BUFFER" clock source (must be connected to IBUF outside of IP)
   val c0_sys_clk_i              = Input(Bool())
   //user interface signals
@@ -43,7 +39,7 @@ trait ZCU104MIGIOClocksReset extends Bundle {
 }
 
 class zcu104mig(depth: BigInt) (implicit val p: Parameters) extends BlackBox {
-  require((depth<=0x80000000L), "zcu104mig supports upto 2GB depth configuration.")
+  require(depth<=0x80000000L, "zcu104mig supports upto 2GB depth configuration.")
 
   val io = IO(new ZCU104MIGIODDR(depth) with ZCU104MIGIOClocksReset {
     //slave interface write address ports
