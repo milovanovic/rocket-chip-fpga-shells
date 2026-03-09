@@ -14,7 +14,7 @@ import sifive.fpgashells.shell._
 class SysClockGenesys2PlacedOverlay(val shell: Genesys2ShellBasicOverlays, name: String, val designInput: ClockInputDesignInput, val shellInput: ClockInputShellInput)
   extends LVDSClockInputXilinxPlacedOverlay(name, designInput, shellInput)
 {
-  val node = shell { ClockSourceNode(freqMHz = 300, jitterPS = 50)(ValName(name)) }
+  val node = shell { ClockSourceNode(freqMHz = 200, jitterPS = 50)(ValName(name)) }
   shell { InModuleBody {
     shell.xdc.addPackagePin(io.p, "AD12")
     shell.xdc.addPackagePin(io.n, "AD11")

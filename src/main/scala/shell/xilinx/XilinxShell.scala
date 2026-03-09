@@ -48,6 +48,9 @@ class XDC(val name: String)
   def addIbufLowPower(io: IOPin, value: String) {
     addConstraint(s"set_property IBUF_LOW_PWR ${value} ${io.sdcPin}")
   }
+  def addRawContent(value: String) {
+    addConstraint(value)
+  }
 }
 
 abstract class XilinxShell()(implicit p: Parameters) extends IOShell

@@ -135,6 +135,8 @@ class SDC(val name: String)
     if (io.isInput)  { addInputDelay (io, clock, timing.minInput,  timing.maxInput)  }
     if (io.isOutput) { addOutputDelay(io, clock, timing.minOutput, timing.maxOutput) }
   }
+
+  def addRawConstraint(command: => String) { falses = (() => command) +: falses }
 }
 
 // An IOOverlay is an Overlay with a public shell-level IO
