@@ -274,43 +274,43 @@ class DDRZCU104PlacedOverlay(val shell: ZCU104ShellBasicOverlays, name: String, 
       port.c0_ddr4_aresetn := !(ar.reset.asBool)
       //DDR4_SODIMM, pg 29 ZCU104 User Guide
       val adr_IOs = Seq(
-        ("AH16", IOPin(io.c0_ddr4_adr(0))),  // DDR4_SODIMM_A0
-        ("AG14", IOPin(io.c0_ddr4_adr(1))),  // DDR4_SODIMM_A1
-        ("AG15", IOPin(io.c0_ddr4_adr(2))),  // DDR4_SODIMM_A2
-        ("AF15", IOPin(io.c0_ddr4_adr(3))),  // DDR4_SODIMM_A3
-        ("AF16", IOPin(io.c0_ddr4_adr(4))),  // DDR4_SODIMM_A4
-        ("AJ14", IOPin(io.c0_ddr4_adr(5))),  // DDR4_SODIMM_A5
-        ("AH14", IOPin(io.c0_ddr4_adr(6))),  // DDR4_SODIMM_A6
-        ("AF17", IOPin(io.c0_ddr4_adr(7))),  // DDR4_SODIMM_A7
-        ("AK17", IOPin(io.c0_ddr4_adr(8))),  // DDR4_SODIMM_A8
-        ("AJ17", IOPin(io.c0_ddr4_adr(9))),  // DDR4_SODIMM_A9
-        ("AK14", IOPin(io.c0_ddr4_adr(10))), // DDR4_SODIMM_A10
-        ("AK15", IOPin(io.c0_ddr4_adr(11))), // DDR4_SODIMM_A11
-        ("AL18", IOPin(io.c0_ddr4_adr(12))), // DDR4_SODIMM_A12
-        ("AK18", IOPin(io.c0_ddr4_adr(13))), // DDR4_SODIMM_A13
-        ("AA16", IOPin(io.c0_ddr4_adr(14))), // DDR4_SODIMM_A14
-        ("AA14", IOPin(io.c0_ddr4_adr(15))), // DDR4_SODIMM_A15
-        ("AD15", IOPin(io.c0_ddr4_adr(16)))  // DDR4_SODIMM_A16
+        "AH16", // DDR4_SODIMM_A0
+        "AG14", // DDR4_SODIMM_A1
+        "AG15", // DDR4_SODIMM_A2
+        "AF15", // DDR4_SODIMM_A3
+        "AF16", // DDR4_SODIMM_A4
+        "AJ14", // DDR4_SODIMM_A5
+        "AH14", // DDR4_SODIMM_A6
+        "AF17", // DDR4_SODIMM_A7
+        "AK17", // DDR4_SODIMM_A8
+        "AJ17", // DDR4_SODIMM_A9
+        "AK14", // DDR4_SODIMM_A10
+        "AK15", // DDR4_SODIMM_A11
+        "AL18", // DDR4_SODIMM_A12
+        "AK18", // DDR4_SODIMM_A13
+        "AA16", // DDR4_SODIMM_A14
+        "AA14", // DDR4_SODIMM_A15
+        "AD15"  // DDR4_SODIMM_A16
       )
-      adr_IOs foreach { case (pin, io) =>
+      (adr_IOs zip IOPin.of(io.c0_ddr4_adr)) foreach { case (pin, io) =>
         shell.xdc.addPackagePin(io, pin)
-        shell.xdc.addIOStandard(io, "SSTL12")
+        shell.xdc.addIOStandard(io, "SSTL12_DCI")
       }
       val ba_IOs = Seq(
-        ("AL15", IOPin(io.c0_ddr4_ba(0))),  // DDR4_SODIMM_BA0
-        ("AL16", IOPin(io.c0_ddr4_ba(1)))   // DDR4_SODIMM_BA1
+        "AL15", // DDR4_SODIMM_BA0
+        "AL16"  // DDR4_SODIMM_BA1
       )
-      ba_IOs foreach { case (pin, io) =>
+      (ba_IOs zip IOPin.of(io.c0_ddr4_ba)) foreach { case (pin, io) =>
         shell.xdc.addPackagePin(io, pin)
-        shell.xdc.addIOStandard(io, "SSTL12")
+        shell.xdc.addIOStandard(io, "SSTL12_DCI")
       }
       val bg_IOs = Seq(
-        ("AC16", IOPin(io.c0_ddr4_bg(0))),  // DDR4_SODIMM_BG0
-        ("AB16", IOPin(io.c0_ddr4_bg(1)))   // DDR4_SODIMM_BG1
+        "AC16", // DDR4_SODIMM_BG0
+        "AB16"  // DDR4_SODIMM_BG1
       )
-      bg_IOs foreach { case (pin, io) =>
+      (bg_IOs zip IOPin.of(io.c0_ddr4_bg)) foreach { case (pin, io) =>
         shell.xdc.addPackagePin(io, pin)
-        shell.xdc.addIOStandard(io, "SSTL12")
+        shell.xdc.addIOStandard(io, "SSTL12_DCI")
       }
       val dq_IOs = Seq(
         "AE24", // DDR4_SODIMM_DQ0
@@ -432,17 +432,17 @@ class DDRZCU104PlacedOverlay(val shell: ZCU104ShellBasicOverlays, name: String, 
         shell.xdc.addIOStandard(io, "DIFF_POD12_DCI")
       }
       val ck_IOs = Seq(
-        ("AF18", IOPin(io.c0_ddr4_ck_t(0))), // DDR4_SODIMM_CK0_T
-        ("AG18", IOPin(io.c0_ddr4_ck_c(0)))  // DDR4_SODIMM_CK0_C
+        ("AF18", IOPin.of(io.c0_ddr4_ck_t).head), // DDR4_SODIMM_CK0_T
+        ("AG18", IOPin.of(io.c0_ddr4_ck_c).head)  // DDR4_SODIMM_CK0_C
       )
       ck_IOs foreach { case (pin, io) =>
         shell.xdc.addPackagePin(io, pin)
-        shell.xdc.addIOStandard(io, "DIFF_POD12")
+        shell.xdc.addIOStandard(io, "DIFF_SSTL12_DCI")
       }
       val other_IOs = Seq(
-        ("AA15", IOPin(io.c0_ddr4_cs_n(0))), // DDR4_SODIMM_CS0_B
-        ("AD17", IOPin(io.c0_ddr4_cke(0))),  // DDR4_SODIMM_CKE0
-        ("AE15", IOPin(io.c0_ddr4_odt(0)))   // DDR4_SODIMM_ODT0
+        ("AA15", IOPin.of(io.c0_ddr4_cs_n).head), // DDR4_SODIMM_CS0_B
+        ("AD17", IOPin.of(io.c0_ddr4_cke).head),  // DDR4_SODIMM_CKE0
+        ("AE15", IOPin.of(io.c0_ddr4_odt).head)   // DDR4_SODIMM_ODT0
       )
       val act_n_IO = Seq(
         ("AC17", IOPin(io.c0_ddr4_act_n))    // DDR4_SODIMM_ACT_B
@@ -453,7 +453,7 @@ class DDRZCU104PlacedOverlay(val shell: ZCU104ShellBasicOverlays, name: String, 
       }
       other_IOs foreach { case (pin, io) =>
         shell.xdc.addPackagePin(io, pin)
-        shell.xdc.addIOStandard(io, "SSTL12")
+        shell.xdc.addIOStandard(io, "SSTL12_DCI")
       }
       val reset_IO = Seq(
         ("AB14", IOPin(io.c0_ddr4_reset_n))  // DDR4_SODIMM_RESET_B
@@ -471,6 +471,12 @@ class DDRZCU104ShellPlacer(shell: ZCU104ShellBasicOverlays, val shellInput: DDRS
   def place(designInput: DDRDesignInput) = new DDRZCU104PlacedOverlay(shell, valName.name, designInput, shellInput)
 }
 
+// Allow scratchpad-only configurations to omit the MIG and DDR package ports.
+case object ZCU104ShellDDR extends Field[Boolean](true)
+class WithNoZCU104ShellDDR extends Config((site, here, up) => {
+  case ZCU104ShellDDR => false
+})
+
 abstract class ZCU104ShellBasicOverlays()(implicit p: Parameters) extends UltraScaleShell{
   // PLL reset causes
   val pllReset = InModuleBody { Wire(Bool()) }
@@ -480,7 +486,7 @@ abstract class ZCU104ShellBasicOverlays()(implicit p: Parameters) extends UltraS
   val led       = Seq.tabulate(8)(i => Overlay(LEDOverlayKey, new LEDZCU104ShellPlacer(this, LEDShellInput(color = "red", number = i))(valName = ValName(s"led_$i"))))
   val switch    = Seq.tabulate(8)(i => Overlay(SwitchOverlayKey, new SwitchZCU104ShellPlacer(this, SwitchShellInput(number = i))(valName = ValName(s"switch_$i"))))
   val button    = Seq.tabulate(5)(i => Overlay(ButtonOverlayKey, new ButtonZCU104ShellPlacer(this, ButtonShellInput(number = i))(valName = ValName(s"button_$i"))))
-  val ddr       = Overlay(DDROverlayKey, new DDRZCU104ShellPlacer(this, DDRShellInput()))
+  val ddr       = if (p(ZCU104ShellDDR)) Some(Overlay(DDROverlayKey, new DDRZCU104ShellPlacer(this, DDRShellInput()))) else None
 }
 
 case object ZCU104ShellPMOD extends Field[String]("JTAG")
